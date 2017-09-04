@@ -4,5 +4,8 @@
   "description": "Spelling bot",
   "main": "bot.js",
   "author": "Menencia",
-  "dependencies": {}
+  "dependencies": {
+    "discord.io": "^2.5.2",
+    "winston": "^2.3.1"
+  }
 }
