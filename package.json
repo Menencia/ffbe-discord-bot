@@ -1,0 +1,8 @@
+{
+  "name": "spelling-bot",
+  "version": "1.0.0",
+  "description": "Spelling bot",
+  "main": "bot.js",
+  "author": "Menencia",
+  "dependencies": {}
+}
