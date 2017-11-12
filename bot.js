@@ -38,6 +38,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 redis.get('count',function(err, result) {
                     if (!result) {
                         result = 0;
+                    } else {
+                        result = parseInt(result);
                     }
                     redis.set('count', result+1);
 
