@@ -1,6 +1,9 @@
 var Discord = require('discord.io');
 var logger = require('winston');
 
+var Redis = require('ioredis');
+var redis = new Redis(process.env.REDIS_URL);
+
 // Configure logger settings
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
@@ -31,9 +34,17 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         switch(cmd) {
 
             case 'ping':
-                bot.sendMessage({
-                    to: channelID,
-                    message: 'Pong!Pong!'
+
+                redis.get('count',function(err, result) {
+                    if (!result) {
+                        result = 0;
+                    }
+                    redis.set('count', result+1);
+
+                    bot.sendMessage({
+                        to: channelID,
+                        message: 'Pong! (' + (result+1) + ')'
+                    });
                 });
             break;
         }
