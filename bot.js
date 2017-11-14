@@ -35,25 +35,26 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
             case 'ping':
 
-                bot.sendMessage({
-                    to: channelID,
-                    message: 'here'
-                });
-
                 redis.get('top current',function(err, current) {
                     current = JSON.parse(current);
                     html = '';
                     _.each(current, function(user, idx) {
                         html += user.name + ' : ' + user.pts + 'pts';
                     });
-                    log(bot, channelID, html);
+                    bot.sendMessage({
+                        to: channelID,
+                        message: html
+                    });
                 });
                 break;
         }
     } else {
         // update top
         redis.get('top current', function(err, current) {
-            log(bot, channelID, userID);
+            bot.sendMessage({
+                to: channelID,
+                message: user
+            });
             updateTopCurrent(current, user.username);
         })
     }
