@@ -1,7 +1,7 @@
 {
-  "name": "spelling-bot",
+  "name": "ffbe-bot",
   "version": "1.0.0",
-  "description": "Spelling bot",
+  "description": "ffbe bot",
   "main": "bot.js",
   "author": "Menencia",
   "dependencies": {

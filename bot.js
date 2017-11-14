@@ -20,9 +20,12 @@ bot.on('message', function (message) {
     if (message.content === '!top') {
         redis.get('top-current',function(err, current) {
             current = JSON.parse(current);
-            var html = '';
-            _.forEach(current, function(user) {
-                html += user.name + ' : ' + user.pts + 'pts' + "\n";
+            // pick 10 first
+            current = _.take(current, 10);
+            // prettify
+            var html = "\n" + '** TOP **';
+            _.forEach(current, function(user, idx) {
+                html += '[' + (idx+1) + '] ' + user.name + ' (' + user.pts + 'pts)' + "\n";
             });
             message.channel.send(html);
         });
