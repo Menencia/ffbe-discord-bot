@@ -19,12 +19,12 @@ bot.on('message', function (message) {
     // detect if it's a command (not count in top)
     if (message.content === '!top') {
         redis.get('top-current',function(err, current) {
-            /*current = JSON.parse(current);
-            html = '';
+            current = JSON.parse(current);
+            var html = '';
             _.forEach(current, function(user) {
                 html += user.name + ' : ' + user.pts + 'pts' + "\n";
-            });*/
-            message.channel.send(current);
+            });
+            message.channel.send(html);
         });
     } else if (message.content === '!clear') {
         redis.set('top-current', JSON.stringify([]));
