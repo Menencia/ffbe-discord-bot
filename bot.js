@@ -52,7 +52,7 @@ function updateTopCurrent(current, name) {
         user.pts++;
         user.date = _.now();
         // reorder
-        current = _.orderBy(users, ['pts', 'date'], ['desc', 'asc']);
+        current = _.orderBy(current, ['pts', 'date'], ['desc', 'asc']);
     } else {
         // add the user at the end
         // no need to reorder
