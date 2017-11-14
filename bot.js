@@ -38,17 +38,15 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 redis.get('top current',function(err, result) {
                     log(bot, channelID, result)
                 });
-            default:
-                log(bot, channelID, "Command unknown!");
-            break;
+                break;
         }
-    } else {
+    }/* else {
         // update top
         redis.get('top current', function(err, current) {
             log(bot, channelID, {current: current, user: user, userID, userID});
             updateTopCurrent(current, user.username);
         })
-    }
+    }*/
 });
 
 function updateTopCurrent(current, name) {
