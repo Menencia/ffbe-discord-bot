@@ -44,13 +44,21 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     });*/
                     bot.sendMessage({
                         to: channelID,
+                        message: user
+                    });
+                    bot.sendMessage({
+                        to: channelID,
+                        message: evt
+                    });
+                    bot.sendMessage({
+                        to: channelID,
                         message: current
                     });
                 });
                 break;
 
             case 'clear':
-                redis.del('top current');
+                redis.set('top current', JSON.stringify([]));
                 bot.sendMessage({
                     to: channelID,
                     message: 'Cleared!'
