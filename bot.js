@@ -53,6 +53,10 @@ function updateTopCurrent(current, name) {
     // look for user
     var user = _.find(current, ['name', name]);
     if (user) {
+        // spam checker
+        if (_.now() - user.date < 10*1000) {
+            return;
+        }
         // update user
         user.pts++;
         user.date = _.now();
