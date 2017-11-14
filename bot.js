@@ -33,10 +33,15 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         args = args.splice(1);
         switch(cmd) {
 
-            case 'ffbe top current':
+            case 'ping':
 
-                redis.get('top current',function(err, result) {
-                    log(bot, channelID, result)
+                redis.get('top current',function(err, current) {
+                    current = JSON.parse(current);
+                    html = '';
+                    _.each(current, function(user, idx) {
+                        html += user.name + ' : ' + user.pts + 'pts';
+                    });
+                    log(bot, channelID, html);
                 });
                 break;
         }
