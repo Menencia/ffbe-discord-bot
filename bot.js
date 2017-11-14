@@ -31,8 +31,7 @@ bot.on('message', function (message) {
         // LOOP !!!
         // update top
         redis.get('top current', function(err, current) {
-            message.channel.send(message.author.username);
-            updateTopCurrent(current, message.author.username, message);
+            updateTopCurrent(current, message.author.username);
         });
     }
 });
@@ -41,7 +40,7 @@ bot.login(process.env.BOT_TOKEN);
 
 // FUNCTIONS //
 
-function updateTopCurrent(current, name, message) {
+function updateTopCurrent(current, name) {
     
     // init current
     current = JSON.parse(current);
