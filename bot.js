@@ -50,10 +50,19 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
             case 'clear':
                 redis.del('top current');
+                bot.sendMessage({
+                    to: channelID,
+                    message: 'Cleared!'
+                });
+                break;
         }
     } else {
+        bot.sendMessage({
+            to: channelID,
+            message: 'here!'
+        });
         // update top
-        redis.get('top current', function(err, current) {
+        /*redis.get('top current', function(err, current) {
             bot.sendMessage({
                 to: channelID,
                 message: user
@@ -63,7 +72,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 message: message
             });
             updateTopCurrent(current, user);
-        })
+        });*/
     }
 });
 
