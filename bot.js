@@ -17,7 +17,7 @@ bot.on('ready', function () {
 bot.on('message', function (message) {
 
     // detect if it's a command (not count in top)
-    if (message.content === '!top') {
+    if (message.content === '!ffbetop') {
         redis.get('top-current',function(err, current) {
             current = JSON.parse(current);
             // pick 10 first
@@ -29,7 +29,7 @@ bot.on('message', function (message) {
             });
             message.channel.send(html);
         });
-    } else if (message.content === '!clear') {
+    } else if (message.content === '!ffbeclear') {
         redis.set('top-current', JSON.stringify([]));
         message.channel.send('Cleared!');
     } else if (!message.author.bot) {
