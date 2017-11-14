@@ -36,14 +36,14 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'ping':
 
                 redis.get('top current',function(err, current) {
-                    current = JSON.parse(current);
+                    /*current = JSON.parse(current);
                     html = '';
-                    _.each(current, function(user, idx) {
+                    _.forEach(current, function(user) {
                         html += user.name + ' : ' + user.pts + 'pts';
-                    });
+                    });*/
                     bot.sendMessage({
                         to: channelID,
-                        message: html
+                        message: current
                     });
                 });
                 break;
@@ -55,7 +55,11 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 to: channelID,
                 message: user
             });
-            updateTopCurrent(current, user.username);
+            bot.sendMessage({
+                to: channelID,
+                message: message
+            });
+            updateTopCurrent(current, user);
         })
     }
 });
