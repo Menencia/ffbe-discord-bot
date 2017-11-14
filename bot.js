@@ -40,13 +40,13 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 });
                 break;
         }
-    }/* else {
+    } else {
         // update top
         redis.get('top current', function(err, current) {
             log(bot, channelID, {current: current, user: user, userID, userID});
             updateTopCurrent(current, user.username);
         })
-    }*/
+    }
 });
 
 function updateTopCurrent(current, name) {
@@ -66,7 +66,7 @@ function updateTopCurrent(current, name) {
         // add the user at the end
         // no need to reorder
         current.push({
-            name = name,
+            name: name,
             pts: 1,
             date: _.now()
         });
