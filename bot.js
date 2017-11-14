@@ -7,7 +7,7 @@ var Redis = require('ioredis');
 var redis = new Redis(process.env.REDIS_URL);
 
 bot.on('ready', function () {
-    redis.set('top current', JSON.stringify([]));
+    redis.set('top-current', JSON.stringify([]));
 });
 
 bot.on('message', function (message) {
@@ -16,7 +16,7 @@ bot.on('message', function (message) {
 
     // detect if it's a command (not count in top)
     if (message.content === '!top') {
-        redis.get('top current',function(err, current) {
+        redis.get('top-current',function(err, current) {
             /*current = JSON.parse(current);
             html = '';
             _.forEach(current, function(user) {
@@ -25,12 +25,12 @@ bot.on('message', function (message) {
             message.channel.send(current);
         });
     } else if (message.content === '!clear') {
-        redis.set('top current', JSON.stringify([]));
+        redis.set('top-current', JSON.stringify([]));
         message.channel.send('Cleared!');
     } else if (!message.author.bot) {
         // LOOP !!!
         // update top
-        redis.get('top current', function(err, current) {
+        redis.get('top-current', function(err, current) {
             updateTopCurrent(current, message.author.username);
         });
     }
@@ -63,5 +63,5 @@ function updateTopCurrent(current, name) {
         });
     }
     // save
-    redis.set('top current', JSON.stringify(current));
+    redis.set('top-current', JSON.stringify(current));
 }
