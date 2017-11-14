@@ -64,6 +64,5 @@ function updateTopCurrent(current, name, message) {
         });
     }
     // save
-    message.channel.send(JSON.stringify(current));
-    redis.set(current, JSON.stringify(current));
+    redis.set('top current', JSON.stringify(current));
 }
