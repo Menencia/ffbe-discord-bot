@@ -76,6 +76,7 @@ function updateTopCurrent(current, name) {
 }
 
 function log(bot, channelID, data) {
+    logger.info(data);
     bot.sendMessage({
         to: channelID,
         message: data
