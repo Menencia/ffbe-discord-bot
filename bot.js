@@ -35,6 +35,11 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
             case 'ping':
 
+                bot.sendMessage({
+                    to: channelID,
+                    message: 'here'
+                });
+
                 redis.get('top current',function(err, current) {
                     current = JSON.parse(current);
                     html = '';
@@ -48,7 +53,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
     } else {
         // update top
         redis.get('top current', function(err, current) {
-            log(bot, channelID, {current: current, user: user, userID, userID});
+            log(bot, channelID, userID);
             updateTopCurrent(current, user.username);
         })
     }
