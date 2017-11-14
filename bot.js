@@ -23,7 +23,7 @@ bot.on('message', function (message) {
             // pick 10 first
             current = _.take(current, 10);
             // prettify
-            var html = "\n" + '** TOP **';
+            var html = ' ' + "\n" + '** TOP **' + "\n";
             _.forEach(current, function(user, idx) {
                 html += '[' + (idx+1) + '] ' + user.name + ' (' + user.pts + 'pts)' + "\n";
             });
