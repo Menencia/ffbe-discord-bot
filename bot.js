@@ -27,20 +27,12 @@ bot.on('message', function (message) {
     } else if (message.content === '!clear') {
         redis.set('top current', JSON.stringify([]));
         message.channel.send('Cleared!');
-    } else {
+    } else if (!message.author.bot) {
         // LOOP !!!
         // update top
-        /*redis.get('top current', function(err, current) {
-            bot.sendMessage({
-                to: channelID,
-                message: user
-            });
-            bot.sendMessage({
-                to: channelID,
-                message: message
-            });
-            updateTopCurrent(current, user);
-        });*/
+        redis.get('top current', function(err, current) {
+            updateTopCurrent(current, message.author.username);
+        });
     }
 });
 
@@ -51,7 +43,7 @@ bot.login(process.env.BOT_TOKEN);
 function updateTopCurrent(current, name) {
     
     // init current
-    current = current ? JSON.parse(current): [];
+    current = JSON.parse(current);
     
     // look for user
     var user = _.find(current, ['name', name]);
