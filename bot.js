@@ -1,5 +1,6 @@
 var Discord = require('discord.io');
 var logger = require('winston');
+var _ = require('lodash');
 
 var Redis = require('ioredis');
 var redis = new Redis(process.env.REDIS_URL);
@@ -19,13 +20,12 @@ var bot = new Discord.Client({
 });
 
 bot.on('ready', function (evt) {
-    logger.info('Connected');
-    logger.info('Logged in as: ');
-    logger.info(bot.username + ' - (' + bot.id + ')');
+    // do nothing
 });
 
 bot.on('message', function (user, userID, channelID, message, evt) {
 
+    // detect if it's a command (not count in top)
     if (message.substring(0, 1) == '!') {
         var args = message.substring(1).split(' ');
         var cmd = args[0];
@@ -33,22 +33,53 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         args = args.splice(1);
         switch(cmd) {
 
-            case 'ping':
+            case 'ffbe top current':
 
-                redis.get('count',function(err, result) {
-                    if (!result) {
-                        result = 0;
-                    } else {
-                        result = parseInt(result);
-                    }
-                    redis.set('count', result+1);
-
-                    bot.sendMessage({
-                        to: channelID,
-                        message: 'Pong! (' + (result+1) + ')'
-                    });
+                redis.get('top current',function(err, result) {
+                    log(bot, channelID, result)
                 });
+            default:
+                log(bot, channelID, "Command unknown!");
             break;
         }
+    } else {
+        // update top
+        redis.get('top current', function(err, current) {
+            log(bot, channelID, {current: current, user: user, userID, userID});
+            updateTopCurrent(current, user.username);
+        })
     }
 });
+
+function updateTopCurrent(current, name) {
+    
+    // init current
+    current = current ? JSON.parse(current): [];
+    
+    // look for user
+    var user = _.find(current, ['name', name]);
+    if (user) {
+        // update user
+        user.pts++;
+        user.date = _.now();
+        // reorder
+        current = _.orderBy(users, ['pts', 'date'], ['desc', 'asc']);
+    } else {
+        // add the user at the end
+        // no need to reorder
+        current.push({
+            name = name,
+            pts: 1,
+            date: _.now()
+        });
+    }
+    // save
+    redis.set(current, JSON.stringify(current));
+}
+
+function log(bot, channelID, data) {
+    bot.sendMessage({
+        to: channelID,
+        message: data
+    });
+}
