@@ -20,7 +20,8 @@ var bot = new Discord.Client({
 });
 
 bot.on('ready', function (evt) {
-    // do nothing
+    // init
+    redis.set('top current', JSON.stringify([]));
 });
 
 bot.on('message', function (user, userID, channelID, message, evt) {
@@ -57,10 +58,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 break;
         }
     } else {
-        bot.sendMessage({
-            to: channelID,
-            message: 'here!'
-        });
+        // LOOP !!!
         // update top
         /*redis.get('top current', function(err, current) {
             bot.sendMessage({
