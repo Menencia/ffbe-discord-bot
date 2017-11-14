@@ -12,7 +12,7 @@ bot.on('ready', function () {
 
 bot.on('message', function (message) {
 
-    message.channel.send(message.system);
+    //message.channel.send(message.system);
 
     // detect if it's a command (not count in top)
     if (message.content === '!top') {
