@@ -47,6 +47,9 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     });
                 });
                 break;
+
+            case 'clear':
+                redis.del('top current');
         }
     } else {
         // update top
