@@ -36,7 +36,7 @@ bot.on('message', function (message) {
                 // prettify
                 var html = ' ' + "\n" + '** TOP LAST **' + "\n";
                 _.forEach(data, function(user, idx) {
-                    html += '[' + (idx+1) + '] ' + user.name + ' (' + user.pts + 'pts)' + "\n";
+                    html += '[' + (idx+1) + '](' + user.pos + ') ' + user.name + ' (' + user.pts + 'pts)' + "\n";
                 });
             } else {
                 var html = 'No Top Last found!';
