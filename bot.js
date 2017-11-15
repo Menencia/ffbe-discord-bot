@@ -6,10 +6,10 @@ var _ = require('lodash');
 var Redis = require('ioredis');
 var redis = new Redis(process.env.REDIS_URL);
 
-var CronJob = require('cron').CronJob;
-new CronJob('*/5 * * * *', function() {
+/*var CronJob = require('cron').CronJob;
+new CronJob('*\/5 * * * *', function() {
   bot.channels.get('ffbe-bot').send('Test (toutes les 5mins)');
-}, null, true, 'America/Los_Angeles');
+}, null, true, 'America/Los_Angeles');*/
 
 bot.on('ready', function () {
     redis.get('top-current', function(err, data) {
