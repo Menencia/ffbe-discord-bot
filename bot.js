@@ -9,7 +9,15 @@ var redis = new Redis(process.env.REDIS_URL);
 var CronJob = require('cron').CronJob;
 new CronJob('*\/5 * * * *', function() {
     try {
-        bot.channels.get('380036130864758785').send('test (every 5mins)');
+        redis.get('top-current',function(err, data) {
+            //resetTopCurrent();
+            data = JSON.parse(data);
+            // pick 10 first
+            data = _.take(data, 10);
+            buildTopLast(data, function() {
+                bot.channels.get('380036130864758785').send('Current->Last!');   
+            });
+        });
     } catch(e) {
         console.log(e);
     }
@@ -52,16 +60,6 @@ bot.on('message', function (message) {
             }
             message.channel.send(html);
         
-        });
-    } else if (message.content === '!ffbecron') {
-        redis.get('top-current',function(err, data) {
-            //resetTopCurrent();
-            data = JSON.parse(data);
-            // pick 10 first
-            data = _.take(data, 10);
-            buildTopLast(data, function() {
-                message.channel.send('Current->Last! (current not touched)');        
-            });
         });
     } else if (message.content === '!ffbecurrentclear') {
         resetTopCurrent();
