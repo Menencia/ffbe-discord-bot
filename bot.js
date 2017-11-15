@@ -9,7 +9,7 @@ var redis = new Redis(process.env.REDIS_URL);
 var CronJob = require('cron').CronJob;
 new CronJob('*\/5 * * * *', function() {
     try {
-        var channel = bot.channels.get('#ffbe-bot');
+        var channel = bot.channels.get('projects/ffbe-bot');
         if (channel) {
             channel.send('Test (toutes les 5mins)');
         }
