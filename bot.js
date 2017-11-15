@@ -148,6 +148,6 @@ function resetTopCurrent() {
     redis.set('top-current', JSON.stringify([]));
 }
 
-function resetLastCurrent() {
+function resetTopLast() {
     redis.del('top-last');
 }
