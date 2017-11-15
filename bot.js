@@ -7,10 +7,10 @@ var Redis = require('ioredis');
 var redis = new Redis(process.env.REDIS_URL);
 
 var CronJob = require('cron').CronJob;
-new CronJob('*\/5 * * * *', function() {
+new CronJob('0 0 * * *', function() {
     try {
         redis.get('top-current',function(err, data) {
-            //resetTopCurrent();
+            resetTopCurrent();
             data = JSON.parse(data);
             // pick 10 first
             data = _.take(data, 10);
