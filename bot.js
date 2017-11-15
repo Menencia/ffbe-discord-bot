@@ -129,9 +129,9 @@ function addPosToLast(tmp, last) {
             if (diff === 0) {
                 user.pos = '=';
             } else if (diff > 0) {
-                user.pos = '+' + diff;
+                user.pos = diff;
             } else if (diff < 0) {
-                user.pos = '-' + diff;
+                user.pos = '+' + diff;
             }
         }
     });
