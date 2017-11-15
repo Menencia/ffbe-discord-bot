@@ -15,7 +15,9 @@ new CronJob('0 0 * * *', function() {
             // pick 10 first
             data = _.take(data, 10);
             buildTopLast(data, function() {
-                bot.channels.get('380036130864758785').send('Le classement a été mis à jour !');   
+                var channel = bot.channels.get('380036130864758785');
+                channel.send('Le classement a été mis à jour !');
+                ffbeTopYesterday(channel);
             });
         });
     } catch(e) {
@@ -47,20 +49,7 @@ bot.on('message', function (message) {
             message.channel.send(html);
         });
     } else if (message.content === '!ffbe top yesterday') {
-        redis.get('top-last',function(err, data) {
-            if (data) {
-                data = JSON.parse(data);
-                // prettify
-                var html = ' ' + "\n" + '** TOP (hier) **' + "\n";
-                _.forEach(data, function(user, idx) {
-                    html += '[' + (idx+1) + '](' + user.pos + ') ' + user.name + ' (' + user.pts + 'pts)' + "\n";
-                });
-            } else {
-                var html = "Aucun classement disponible pour l'instant. Attendez minuit !";
-            }
-            message.channel.send(html);
-        
-        });
+        ffbeTopYesterday(message.channel);
     } else if (message.content === '!ffbecurrentclear') {
         resetTopCurrent();
         message.channel.send("TOP (aujourd'hui) effacé !");
@@ -78,6 +67,22 @@ bot.on('message', function (message) {
 bot.login(process.env.BOT_TOKEN);
 
 // FUNCTIONS //
+
+function ffbeTopYesterday(channel) {
+    redis.get('top-last',function(err, data) {
+        if (data) {
+            data = JSON.parse(data);
+            // prettify
+            var html = ' ' + "\n" + '** TOP (hier) **' + "\n";
+            _.forEach(data, function(user, idx) {
+                html += '[' + (idx+1) + '](' + user.pos + ') ' + user.name + ' (' + user.pts + 'pts)' + "\n";
+            });
+        } else {
+            var html = "Aucun classement disponible pour l'instant. Attendez minuit !";
+        }
+        channel.send(html);
+    });
+}
 
 function updateTopCurrent(current, name) {
     
