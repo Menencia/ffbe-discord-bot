@@ -73,7 +73,7 @@ bot.on('message', function (message) {
         var guild = bot.guilds.get('185745050217611264');
         if (guild && guild.available) {
             var role = guild.roles.get('name', 'Roi de Grandshelt');
-            console.log(role);
+            console.log(guild.roles);
             if (message.member.roles.has(role)) {
                 resetTopLast();
                 message.channel.send('Le classement de hier a été effacé !');
