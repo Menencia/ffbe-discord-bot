@@ -49,7 +49,7 @@ bot.on('ready', function () {
 bot.on('message', function (message) {
 
     // detect if it's a command (not count in top)
-    if (message.content === '!top') {
+    if (message.content === '!top today') {
         redis.get('top-current',function(err, data) {
             data = JSON.parse(data);
             // pick 10 first
@@ -65,22 +65,22 @@ bot.on('message', function (message) {
             });
             message.channel.send(html);
         });
-    } else if (message.content === '!top yesterday') {
+    } else if (message.content === '!top') {
         ffbeTopYesterday(function(html) {
             message.channel.send(html);
         });
-    } else if (message.content === '!top yesterday clear') {
+    } else if (message.content === '!top clear') {
         // 'FFBraveExvius (FR)' server
         var guild = bot.guilds.get('185745050217611264');
         if (guild && guild.available) {
             // 'Roi de Grandshelt' role
             var role = guild.roles.get(376143187569410057);
-            //if (message.member.roles.has(role)) {
+            if (message.member.roles.has(role.id)) {
                 resetTopLast();
                 message.channel.send('Le classement de hier a été effacé !');
-            //} else {
-            //    message.channel.send("Vous n'avez pas les droits !");
-            //}
+            } else {
+                message.channel.send("Vous n'avez pas les droits !");
+            }
         }
     } else if (!message.author.bot) {
         // update top current
