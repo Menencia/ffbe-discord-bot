@@ -75,7 +75,11 @@ function ffbeTopYesterday(channel) {
             // prettify
             var html = ' ' + "\n" + '** TOP (hier) **' + "\n";
             _.forEach(data, function(user, idx) {
-                html += '[' + (idx+1) + '](' + user.pos + ') ' + user.name + ' (' + user.pts + 'pts)' + "\n";
+                html += '[' + (idx+1) + '](' + user.pos + ') ' + user.name + ' (' + user.pts + 'pts)';
+                if (user.id) {
+                    html += ' <' + user.id + '>';
+                }
+                html += "\n";
             });
         } else {
             var html = "Aucun classement disponible pour l'instant. Attendez minuit !";
