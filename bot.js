@@ -15,9 +15,12 @@ new CronJob('0 0 * * *', function() {
             // pick 10 first
             data = _.take(data, 10);
             buildTopLast(data, function() {
+                // "ffbe-bot" channel
                 var channel = bot.channels.get('380036130864758785');
                 channel.send('Le classement a été mis à jour !');
                 ffbeTopYesterday(channel);
+                // 'FFBraveExvius (FR)' guild
+                /// @todo
             });
         });
     } catch(e) {
@@ -44,7 +47,11 @@ bot.on('message', function (message) {
             // prettify
             var html = ' ' + "\n" + "** TOP (aujourd'hui) **" + "\n";
             _.forEach(data, function(user, idx) {
-                html += '[' + (idx+1) + '] ' + user.name + ' (' + user.pts + 'pts)' + "\n";
+                html += '[' + (idx+1) + '] ' + user.name + ' (' + user.pts + 'pts)';
+                if (user.id) {
+                    html += ' <' + user.id + '>';
+                }
+                html += "\n";
             });
             message.channel.send(html);
         });
@@ -76,9 +83,6 @@ function ffbeTopYesterday(channel) {
             var html = ' ' + "\n" + '** TOP (hier) **' + "\n";
             _.forEach(data, function(user, idx) {
                 html += '[' + (idx+1) + '](' + user.pos + ') ' + user.name + ' (' + user.pts + 'pts)';
-                if (user.id) {
-                    html += ' <' + user.id + '>';
-                }
                 html += "\n";
             });
         } else {
@@ -102,6 +106,7 @@ function updateTopCurrent(current, author) {
         }
         // update user
         user.id = author.id; // remove this @next iteration
+        user.name = author.username;
         user.pts++;
         user.date = _.now();
         // reorder
@@ -111,7 +116,7 @@ function updateTopCurrent(current, author) {
         // no need to reorder
         current.push({
             id: author.id,
-            name: author.name,
+            name: author.username,
             pts: 1,
             date: _.now()
         });
