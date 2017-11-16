@@ -59,7 +59,7 @@ bot.on('message', function (message) {
     } else if (!message.author.bot) {
         // update top
         redis.get('top-current', function(err, data) {
-            updateTopCurrent(data, message.author.username);
+            updateTopCurrent(data, message.author);
         });
     }
 });
@@ -84,13 +84,13 @@ function ffbeTopYesterday(channel) {
     });
 }
 
-function updateTopCurrent(current, name) {
+function updateTopCurrent(current, author) {
     
     // init current
     current = JSON.parse(current);
     
     // look for user
-    var user = _.find(current, ['name', name]);
+    var user = _.find(current, ['id', author.id]);
     if (user) {
         // spam checker
         if (_.now() - user.date < 10*1000) {
@@ -105,7 +105,8 @@ function updateTopCurrent(current, name) {
         // add the user at the end
         // no need to reorder
         current.push({
-            name: name,
+            id: author.id,
+            name: author.name,
             pts: 1,
             date: _.now()
         });
@@ -119,6 +120,7 @@ function buildTopLast(data, cb) {
         var tmp = [];
         _.forEach(data, function(user) {
             tmp.push({
+                id: user.id,
                 name: user.name,
                 pts: user.pts,
                 pos: 'N'
