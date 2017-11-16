@@ -101,6 +101,7 @@ function updateTopCurrent(current, author) {
             return;
         }
         // update user
+        user.id = author.id; // remove this @next iteration
         user.pts++;
         user.date = _.now();
         // reorder
