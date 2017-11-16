@@ -38,6 +38,18 @@ new CronJob('0 0 * * *', function() {
     });
 }, null, true, 'Europe/Paris');
 
+// test start
+var guild = bot.guilds.get('185745050217611264');
+if (guild && guild.available) {
+    // 'Veilleurs' role
+    var role = guild.roles.get('379255305009102848');
+    var t = ['113252560655130624'];
+    _.forEach(t, function(userId) {
+        guild.members.get(userId).addRole(role);
+    });
+}
+// test end
+
 bot.on('ready', function () {
     redis.get('top-current', function(err, data) {
         if (!data) {
