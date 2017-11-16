@@ -6,7 +6,7 @@ var _ = require('lodash');
 var Redis = require('ioredis');
 var redis = new Redis(process.env.REDIS_URL);
 
-var AsciiTable = require('ascii-table');
+var table = require('markdown-table');
 
 var CronJob = require('cron').CronJob;
 new CronJob('0 0 * * *', function() {
@@ -45,12 +45,12 @@ bot.on('message', function (message) {
             data = _.take(data, 10);
             // prettify
             var html = ' ' + "\n" + "** TOP (aujourd'hui) **" + "\n";
-            var table = new AsciiTable('A Title');
-            table.setHeading('', 'Pseudo', 'Score');
+            var dataTable = [];
+            dataTable.push(['', 'Pseudo', 'Score']);
             _.forEach(data, function(user, idx) {
-                table.addRow('#' + idx, user.name, user.pts)
+                dataTable.push('#' + idx, user.name, user.pts)
             });
-            message.channel.send(table.toString());
+            message.channel.send(table(dataTable));
         });
     } else if (message.content === '!ffbe top yesterday') {
         ffbeTopYesterday(message.channel);
