@@ -75,12 +75,12 @@ bot.on('message', function (message) {
         if (guild && guild.available) {
             // 'Roi de Grandshelt' role
             var role = guild.roles.get(376143187569410057);
-            if (message.member.roles.has(role)) {
+            //if (message.member.roles.has(role)) {
                 resetTopLast();
                 message.channel.send('Le classement de hier a été effacé !');
-            } else {
-                message.channel.send("Vous n'avez pas les droits !");
-            }
+            //} else {
+            //    message.channel.send("Vous n'avez pas les droits !");
+            //}
         }
     } else if (!message.author.bot) {
         // update top current
