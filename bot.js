@@ -68,6 +68,18 @@ bot.on('message', function (message) {
         ffbeTopYesterday(function(html) {
             message.channel.send(html);
         });
+    } else if (message.content === '!top yesterday clear') {
+        // 'FFBraveExvius (FR)' server
+        var guild = bot.guilds.get('185745050217611264');
+        if (guild && guild.available) {
+            var role = guild.roles.get('name', 'Roi de Grandshelt');
+            if (message.author.member.roles.has(role)) {
+                resetTopLast();
+                message.channel.send('Le classement de hier a été effacé !');
+            } else {
+                message.channel.send("Vous n'avez pas les droits !");
+            }
+        }
     } else if (!message.author.bot) {
         // update top current
         redis.get('top-current', function(err, data) {
@@ -144,10 +156,12 @@ function buildTopLast(data, callback) {
         if (last) {
             last = JSON.parse(last);
             addPosToLast(tmp, last);
-            oldUsers = _.map(_.difference(last, tmp), 'id');
-            newUsers = _.map(_.difference(tmp, last), 'id');
+            var tmpIds = _.map(tmp, 'id');
+            var lastIds = _.map(last, 'id');
+            oldUsers = _.difference(lastIds, tmpIds);
+            newUsers = _.difference(tmpIds, lastIds);
         } else {
-            newUsers = _.map(tmp, 'id');
+            newUsers = tmpIds;
         }
         redis.set('top-last', JSON.stringify(tmp));
         callback(oldUsers, newUsers);
@@ -172,4 +186,8 @@ function addPosToLast(tmp, last) {
 
 function resetTopCurrent() {
     redis.set('top-current', JSON.stringify([]));
+}
+
+function resetTopLast() {
+    redis.del('top-last');
 }
