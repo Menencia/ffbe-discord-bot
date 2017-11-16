@@ -24,7 +24,7 @@ new CronJob('0 0 * * *', function() {
             var guild = bot.guilds.get('185745050217611264');
             if (guild && guild.available) {
                 // 'Veilleurs' role
-                var role = guild.roles.get(379255305009102848);
+                var role = guild.roles.get('379255305009102848');
                 if (role) {
                     _.forEach(oldUsers, function(userId) {
                         guild.members.get(userId).removeRole(role);
@@ -71,17 +71,17 @@ bot.on('message', function (message) {
         });
     } else if (message.content === '!top clear') {
         // 'FFBraveExvius (FR)' server
-        /*var guild = bot.guilds.get('185745050217611264');
+        var guild = bot.guilds.get('185745050217611264');
         if (guild && guild.available) {
             // 'Roi de Grandshelt' role
-            var role = guild.roles.get(376143187569410057);
+            var role = guild.roles.get('376143187569410057');
             if (message.member.roles.has(role.id)) {
                 resetTopLast();
                 message.channel.send('Le classement de hier a été effacé !');
             } else {
                 message.channel.send("Vous n'avez pas les droits !");
             }
-        }*/
+        }
     } else if (!message.author.bot) {
         // update top current
         redis.get('top-current', function(err, data) {
