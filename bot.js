@@ -8,24 +8,33 @@ var redis = new Redis(process.env.REDIS_URL);
 
 var CronJob = require('cron').CronJob;
 new CronJob('0 0 * * *', function() {
-    try {
-        redis.get('top-current',function(err, data) {
-            resetTopCurrent();
-            data = JSON.parse(data);
-            // pick 10 first
-            data = _.take(data, 10);
-            buildTopLast(data, function() {
-                // "ffbe-bot" channel
-                var channel = bot.channels.get('380036130864758785');
-                channel.send('Le classement a été mis à jour !');
-                ffbeTopYesterday(channel);
-                // 'FFBraveExvius (FR)' guild
-                /// @todo
+    redis.get('top-current',function(err, data) {
+        resetTopCurrent();
+        data = JSON.parse(data);
+        // pick 10 first
+        data = _.take(data, 10);
+        buildTopLast(data, function(oldUsers, newUsers) {
+            // "ffbe-bot" channel
+            var channel = bot.channels.get('380036130864758785');
+            channel.send('Le classement a été mis à jour !');
+            ffbeTopYesterday(function(html) {
+                channel.send(html);
             });
+            // 'FFBraveExvius (FR)' server
+            var guild = bot.guilds.get('185745050217611264');
+            if (guild && guild.available) {
+                var role = guild.roles.get('name', 'Veilleurs');
+                if (role) {
+                    _.forEach(oldUsers, function(userId) {
+                        guild.members.get(userId).removeRole(role);
+                    });
+                    _.forEach(newUsers, function(userId) {
+                        guild.members.get(userId).addRole(role);
+                    });
+                }
+            }
         });
-    } catch(e) {
-        console.log(e);
-    }
+    });
 }, null, true, 'Europe/Paris');
 
 bot.on('ready', function () {
@@ -39,7 +48,7 @@ bot.on('ready', function () {
 bot.on('message', function (message) {
 
     // detect if it's a command (not count in top)
-    if (message.content === '!ffbe top today') {
+    if (message.content === '!top') {
         redis.get('top-current',function(err, data) {
             data = JSON.parse(data);
             // pick 10 first
@@ -55,24 +64,12 @@ bot.on('message', function (message) {
             });
             message.channel.send(html);
         });
-    } else if (message.content === '!ffbe top yesterday') {
-        ffbeTopYesterday(message.channel);
-    } else if (message.content === '!ffbe clean top current') {
-        redis.get('top-current', function(err, data) {
-            data = JSON.parse(data);
-            var good = _.filter(data, function(user) {
-                return user.id;
-            });
-            redis.set('top-current', JSON.stringify(good));
+    } else if (message.content === '!top yesterday') {
+        ffbeTopYesterday(function(html) {
+            message.channel.send(html);
         });
-    } else if (message.content === '!ffbecurrentclear') {
-        resetTopCurrent();
-        message.channel.send("TOP (aujourd'hui) effacé !");
-    } else if (message.content === '!ffbelastclear') {
-        resetTopLast();
-        message.channel.send('TOP (hier) effacé !');
     } else if (!message.author.bot) {
-        // update top
+        // update top current
         redis.get('top-current', function(err, data) {
             updateTopCurrent(data, message.author);
         });
@@ -83,7 +80,7 @@ bot.login(process.env.BOT_TOKEN);
 
 // FUNCTIONS //
 
-function ffbeTopYesterday(channel) {
+function ffbeTopYesterday(callback) {
     redis.get('top-last',function(err, data) {
         if (data) {
             data = JSON.parse(data);
@@ -96,7 +93,7 @@ function ffbeTopYesterday(channel) {
         } else {
             var html = "Aucun classement disponible pour l'instant. Attendez minuit !";
         }
-        channel.send(html);
+        return callback(html);
     });
 }
 
@@ -131,7 +128,9 @@ function updateTopCurrent(current, author) {
     redis.set('top-current', JSON.stringify(current));
 }
 
-function buildTopLast(data, cb) {
+function buildTopLast(data, callback) {
+    var oldUsers = []; 
+    var newUsers = [];
     redis.get('top-last', function(err, last) {
         var tmp = [];
         _.forEach(data, function(user) {
@@ -145,9 +144,13 @@ function buildTopLast(data, cb) {
         if (last) {
             last = JSON.parse(last);
             addPosToLast(tmp, last);
+            oldUsers = _.map(_.difference(last, tmp), 'id');
+            newUsers = _.map(_.difference(tmp, last), 'id');
+        } else {
+            newUsers = _.map(tmp, 'id');
         }
         redis.set('top-last', JSON.stringify(tmp));
-        cb();
+        callback(oldUsers, newUsers);
     })
 }
 
@@ -169,8 +172,4 @@ function addPosToLast(tmp, last) {
 
 function resetTopCurrent() {
     redis.set('top-current', JSON.stringify([]));
-}
-
-function resetTopLast() {
-    redis.del('top-last');
 }
