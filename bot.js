@@ -57,6 +57,14 @@ bot.on('message', function (message) {
         });
     } else if (message.content === '!ffbe top yesterday') {
         ffbeTopYesterday(message.channel);
+    } else if (message.content === '!ffbe clean top current') {
+        redis.get('top-current', function(err, data) {
+            data = JSON.parse(data);
+            var good = _.filter(data, function(user) {
+                return user.id;
+            });
+            redis.set('top-current', JSON.stringify(good));
+        });
     } else if (message.content === '!ffbecurrentclear') {
         resetTopCurrent();
         message.channel.send("TOP (aujourd'hui) effacé !");
@@ -105,8 +113,6 @@ function updateTopCurrent(current, author) {
             return;
         }
         // update user
-        user.id = author.id; // remove this @next iteration
-        user.name = author.username;
         user.pts++;
         user.date = _.now();
         // reorder
@@ -147,7 +153,7 @@ function buildTopLast(data, cb) {
 
 function addPosToLast(tmp, last) {
     _.forEach(tmp, function(user, idx){
-        var found = _.findIndex(last, {name: user.name});
+        var found = _.findIndex(last, {id: user.id});
         if (found > -1) {
             var diff = idx - found;
             if (diff === 0) {
