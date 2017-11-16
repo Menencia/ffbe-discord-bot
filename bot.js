@@ -23,7 +23,8 @@ new CronJob('0 0 * * *', function() {
             // 'FFBraveExvius (FR)' server
             var guild = bot.guilds.get('185745050217611264');
             if (guild && guild.available) {
-                var role = guild.roles.get('name', 'Veilleurs');
+                // 'Veilleurs' role
+                var role = guild.roles.get(379255305009102848);
                 if (role) {
                     _.forEach(oldUsers, function(userId) {
                         guild.members.get(userId).removeRole(role);
@@ -72,8 +73,8 @@ bot.on('message', function (message) {
         // 'FFBraveExvius (FR)' server
         var guild = bot.guilds.get('185745050217611264');
         if (guild && guild.available) {
-            var role = guild.roles.get('name', 'Roi de Grandshelt');
-            console.log(guild.roles);
+            // 'Roi de Grandshelt' role
+            var role = guild.roles.get(376143187569410057);
             if (message.member.roles.has(role)) {
                 resetTopLast();
                 message.channel.send('Le classement de hier a été effacé !');
