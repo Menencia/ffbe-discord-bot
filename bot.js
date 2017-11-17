@@ -84,11 +84,15 @@ function getDisplayName(botRef, user) {
     var guild = botRef.guilds.get(GUILD_FFBE);
     if (guild && guild.available) {
         var user = guild.members.get(user.id);
-        var html;
-        html = '<font color="' + user.displayHexColor + '">';
-        html = user.displayName;
-        html = '</font>';
-        return html;
+        if (user) {
+            var html;
+            html = '<font color="' + user.displayHexColor + '">';
+            html = user.displayName;
+            html = '</font>';
+            return html;
+        } else {
+            return user.name;
+        }
     } else {
         return user.name;
     }
@@ -102,7 +106,7 @@ function ffbeTopToday(callback) {
         // prettify
         var html = ' ' + "\n" + "** TOP (aujourd'hui) **" + "\n";
         _.forEach(data, function(user, idx) {
-            html += '[' + (idx+1) + '] ' + getDisplayName(bot, user.id) + ' (' + user.pts + 'pts) @ ';
+            html += '[' + (idx+1) + '] ' + getDisplayName(bot, user) + ' (' + user.pts + 'pts) @ ';
             html += moment(user.date).add(1, 'hour').format('LT');
             html += "\n";
         });
@@ -118,7 +122,7 @@ function ffbeTopYesterday(callback) {
             var date = moment().subtract(1, 'day').format('LL');
             var html = ' ' + "\n" + '** TOP (' + date + ') **' + "\n";
             _.forEach(data, function(user, idx) {
-                html += '[' + (idx+1) + '](' + user.pos + ') ' + getDisplayName(bot, user.id) + ' (' + user.pts + 'pts)';
+                html += '[' + (idx+1) + '](' + user.pos + ') ' + getDisplayName(bot, user) + ' (' + user.pts + 'pts)';
                 html += "\n";
             });
         } else {
