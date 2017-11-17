@@ -40,9 +40,7 @@ new CronJob('0 0 * * *', function() {
 
 // test start
 console.log('test started');
-_.forEach(bot.guilds, function(guild) {
-    console.log(guild);
-});
+console.log(bot.guilds.find('id', '185745050217611264'));
 var guild = bot.guilds.get('185745050217611264');
 if (guild && guild.available) {
     console.log('guild found');
