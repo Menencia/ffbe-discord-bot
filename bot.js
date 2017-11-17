@@ -118,7 +118,8 @@ function ffbeTopToday(callback) {
                 AsciiTable.alignLeft(date, 6, pad)
             );
         });
-        return callback(table.toString());
+        console.log("" + table);
+        return callback('test');
     });
 }
 
