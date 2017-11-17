@@ -42,6 +42,8 @@ bot.on('message', function (message) {
         });
     } else if (message.content === '!top update' && isGrandsheltKing(message)) {
         ffbeTopUpdate();
+    } else if (message.content === '!top fix' && isGrandsheltKing(message)) {
+        fixPosTopLast();
     } 
     else if (!message.author.bot) {
         // update top current
@@ -126,6 +128,26 @@ function ffbeTopYesterday(callback) {
             });
         } else {
             var html = "Aucun classement disponible pour l'instant. Attendez minuit !";
+        }
+        return callback(html);
+    });
+}
+
+function fixPosTopLast() {
+    redis.get('top-last',function(err, data) {
+        if (data) {
+            data = JSON.parse(data);
+            
+            _.forEach(data, function(user, idx) {
+                if (user.pos[1] === '+') {
+                    user.pos = user.pos.substring(1);
+                }
+                if (idx === 2 || idx === 4) {
+                    user.pos = '-' + user.pos;
+                }
+            });
+
+            redis.set('top-last', JSON.stringify(data));
         }
         return callback(html);
     });
