@@ -11,6 +11,8 @@ var CronJob = require('cron').CronJob;
 var moment = require('moment');
 moment.locale('fr');
 
+var AsciiTable = require('ascii-table');
+
 var GUILD_FFBE = '185745050217611264';
 var CHANNEL_FFBE = '380036130864758785';
 var ROLE_ADMIN = '376143187569410057';
@@ -96,13 +98,27 @@ function ffbeTopToday(callback) {
         // pick 10 first
         data = _.take(data, 10);
         // prettify
-        var html = ' ' + "\n" + "** TOP (aujourd'hui) **" + "\n";
+        var pad = ' ';
+        var table = new AsciiTable();
+        table
+            .setTitle("TOP (aujourd'hui")
+            .setHeading(
+                AsciiTable.alignLeft('#', 3, pad), 
+                AsciiTable.alignLeft('Pseudo', 100, pad), 
+                AsciiTable.alignLeft('Pts', 4, pad), 
+                AsciiTable.alignLeft('Date', 6, pad)
+            );
         _.forEach(data, function(user, idx) {
-            html += '[' + (idx+1) + '] ' + getDisplayName(bot, user) + ' (' + user.pts + 'pts) @ ';
-            html += moment(user.date).add(1, 'hour').format('LT');
-            html += "\n";
+            var displayName = getDisplayName(bot, user);
+            var date = moment(user.date).add(1, 'hour').format('LT');
+            table.addRow(
+                AsciiTable.alignLeft(idx+1, 3, pad), 
+                AsciiTable.alignLeft(displayName, 100, pad), 
+                AsciiTable.alignLeft(user.pts, 4, pad), 
+                AsciiTable.alignLeft(date, 6, pad)
+            );
         });
-        return callback(html);
+        return callback(table.toString());
     });
 }
 
