@@ -8,6 +8,11 @@ var redis = new Redis(process.env.REDIS_URL);
 
 var CronJob = require('cron').CronJob;
 
+var GUILD_FFBE = '185745050217611264';
+var CHANNEL_FFBE = '380036130864758785';
+var ROLE_ADMIN = '376143187569410057';
+var ROLE_GUARDIANS = '379255305009102848';
+
 bot.on('ready', function () {
     redis.get('top-current', function(err, data) {
         if (!data) {
@@ -21,52 +26,27 @@ bot.on('message', function (message) {
 
     // detect if it's a command (not count in top)
     if (message.content === '!top today') {
-        redis.get('top-current',function(err, data) {
-            data = JSON.parse(data);
-            // pick 10 first
-            data = _.take(data, 10);
-            // prettify
-            var html = ' ' + "\n" + "** TOP (aujourd'hui) **" + "\n";
-            _.forEach(data, function(user, idx) {
-                html += '[' + (idx+1) + '] ' + user.name + ' (' + user.pts + 'pts)';
-                if (user.id) {
-                    html += ' <' + user.id + '>';
-                }
-                html += "\n";
+        if (message.member.roles.has(ROLE_ADMIN)) {
+            redis.get('top-current',function(err, data) {
+                data = JSON.parse(data);
+                // pick 10 first
+                data = _.take(data, 10);
+                // prettify
+                var html = ' ' + "\n" + "** TOP (aujourd'hui) **" + "\n";
+                _.forEach(data, function(user, idx) {
+                    html += '[' + (idx+1) + '] ' + user.name + ' (' + user.pts + 'pts)';
+                    if (user.id) {
+                        html += ' <' + user.id + '>';
+                    }
+                    html += "\n";
+                });
+                message.channel.send(html);
             });
-            message.channel.send(html);
-        });
+        }
     } else if (message.content === '!top') {
         ffbeTopYesterday(function(html) {
             message.channel.send(html);
         });
-    } else if (message.content === '!addroles') {
-        redis.get('top-current',function(err, data) {
-            data = JSON.parse(data);
-            var guild = bot.guilds.get('185745050217611264');
-            if (guild && guild.available) {
-                // 'Veilleurs' role
-                var role = '379255305009102848';
-                if (role) {
-                    _.forEach(data, function(user) {
-                        guild.members.get(user.id).addRole(role);
-                    });
-                }
-            }
-        });
-    } else if (message.content === '!top clear') {
-        // 'FFBraveExvius (FR)' server
-        var guild = bot.guilds.get('185745050217611264');
-        if (guild && guild.available) {
-            // 'Roi de Grandshelt' role
-            var role = guild.roles.get('376143187569410057');
-            if (message.member.roles.has(role.id)) {
-                resetTopLast();
-                message.channel.send('Le classement de hier a été effacé !');
-            } else {
-                message.channel.send("Vous n'avez pas les droits !");
-            }
-        }
     } else if (!message.author.bot) {
         // update top current
         redis.get('top-current', function(err, data) {
@@ -87,25 +67,19 @@ function initCron() {
             // pick 10 first
             data = _.take(data, 10);
             buildTopLast(data, function(oldUsers, newUsers) {
-                // "ffbe-bot" channel
-                var channel = bot.channels.get('380036130864758785');
+                var channel = bot.channels.get(CHANNEL_FFBE);
                 channel.send('Le classement a été mis à jour !');
                 ffbeTopYesterday(function(html) {
                     channel.send(html);
                 });
-                // 'FFBraveExvius (FR)' server
-                var guild = bot.guilds.get('185745050217611264');
+                var guild = bot.guilds.get(GUILD_FFBE);
                 if (guild && guild.available) {
-                    // 'Veilleurs' role
-                    var role = '379255305009102848';
-                    if (role) {
-                        _.forEach(oldUsers, function(userId) {
-                            guild.members.get(userId).removeRole(role);
-                        });
-                        _.forEach(newUsers, function(userId) {
-                            guild.members.get(userId).addRole(role);
-                        });
-                    }
+                    _.forEach(oldUsers, function(userId) {
+                        guild.members.get(userId).removeRole(ROLE_GUARDIANS);
+                    });
+                    _.forEach(newUsers, function(userId) {
+                        guild.members.get(userId).addRole(ROLE_GUARDIANS);
+                    });
                 }
             });
         });
