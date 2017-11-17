@@ -8,6 +8,9 @@ var redis = new Redis(process.env.REDIS_URL);
 
 var CronJob = require('cron').CronJob;
 
+var moment = require('moment');
+moment.locale('fr');
+
 var GUILD_FFBE = '185745050217611264';
 var CHANNEL_FFBE = '380036130864758785';
 var ROLE_ADMIN = '376143187569410057';
@@ -85,10 +88,8 @@ function ffbeTopToday(callback) {
         // prettify
         var html = ' ' + "\n" + "** TOP (aujourd'hui) **" + "\n";
         _.forEach(data, function(user, idx) {
-            html += '[' + (idx+1) + '] ' + user.name + ' (' + user.pts + 'pts)';
-            if (user.id) {
-                html += ' <' + user.id + '>';
-            }
+            html += '[' + (idx+1) + '] ' + user.name + ' (' + user.pts + 'pts) @ ';
+            html += moment(user.date).format('LT');
             html += "\n";
         });
         return callback(html);
@@ -100,7 +101,8 @@ function ffbeTopYesterday(callback) {
         if (data) {
             data = JSON.parse(data);
             // prettify
-            var html = ' ' + "\n" + '** TOP (hier) **' + "\n";
+            var date = moment().subtract(1, 'day').format('LL');
+            var html = ' ' + "\n" + '** TOP (' + date + ') **' + "\n";
             _.forEach(data, function(user, idx) {
                 html += '[' + (idx+1) + '](' + user.pos + ') ' + user.name + ' (' + user.pts + 'pts)';
                 html += "\n";
