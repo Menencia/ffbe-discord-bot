@@ -87,8 +87,8 @@ function getDisplayName(botRef, user) {
         if (user) {
             var html;
             html = '<font color="' + user.displayHexColor + '">';
-            html = user.displayName;
-            html = '</font>';
+            html += user.displayName;
+            html += '</font>';
             return html;
         } else {
             return user.name;
