@@ -42,6 +42,7 @@ bot.on('message', function (message) {
         });
     } else if (message.content === '!addroles') {
         redis.get('top-current',function(err, data) {
+            data = JSON.parse(data);
             var guild = bot.guilds.get('185745050217611264');
             if (guild && guild.available) {
                 // 'Veilleurs' role
