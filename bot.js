@@ -25,29 +25,16 @@ bot.on('ready', function () {
 bot.on('message', function (message) {
 
     // detect if it's a command (not count in top)
-    if (message.content === '!top today') {
-        if (message.member.roles.has(ROLE_ADMIN)) {
-            redis.get('top-current',function(err, data) {
-                data = JSON.parse(data);
-                // pick 10 first
-                data = _.take(data, 10);
-                // prettify
-                var html = ' ' + "\n" + "** TOP (aujourd'hui) **" + "\n";
-                _.forEach(data, function(user, idx) {
-                    html += '[' + (idx+1) + '] ' + user.name + ' (' + user.pts + 'pts)';
-                    if (user.id) {
-                        html += ' <' + user.id + '>';
-                    }
-                    html += "\n";
-                });
-                message.channel.send(html);
-            });
-        }
-    } else if (message.content === '!top') {
+    if (message.content === '!top today' && isGrandsheltKing(message)) {
+        ffbeTopToday(function(html) {
+            message.channel.send(html);
+        });
+    } else if (message.content === '!top' && isGrandsheltKing(message)) {
         ffbeTopYesterday(function(html) {
             message.channel.send(html);
         });
-    } else if (!message.author.bot) {
+    } 
+    else if (!message.author.bot) {
         // update top current
         redis.get('top-current', function(err, data) {
             updateTopCurrent(data, message.author);
@@ -58,6 +45,10 @@ bot.on('message', function (message) {
 bot.login(process.env.BOT_TOKEN);
 
 // FUNCTIONS //
+
+function isGrandsheltKing(message) {
+    return message.member.roles.has(ROLE_ADMIN);
+}
 
 function initCron() {
     new CronJob('0 0 * * *', function() {
@@ -84,6 +75,24 @@ function initCron() {
             });
         });
     }, null, true, 'Europe/Paris');
+}
+
+function ffbeTopToday(callback) {
+    redis.get('top-current',function(err, data) {
+        data = JSON.parse(data);
+        // pick 10 first
+        data = _.take(data, 10);
+        // prettify
+        var html = ' ' + "\n" + "** TOP (aujourd'hui) **" + "\n";
+        _.forEach(data, function(user, idx) {
+            html += '[' + (idx+1) + '] ' + user.name + ' (' + user.pts + 'pts)';
+            if (user.id) {
+                html += ' <' + user.id + '>';
+            }
+            html += "\n";
+        });
+        return callback(html);
+    });
 }
 
 function ffbeTopYesterday(callback) {
@@ -182,6 +191,7 @@ function resetTopCurrent() {
     redis.set('top-current', JSON.stringify([]));
 }
 
+/** unused function */
 function resetTopLast() {
     redis.del('top-last');
 }
