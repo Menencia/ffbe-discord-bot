@@ -1,6 +1,6 @@
 var Discord = require('discord.js');
 var bot = new Discord.Client();
-var server = new Discord.Server('185745050217611264');
+//var server = new Discord.Server('185745050217611264');
 
 var _ = require('lodash');
 
@@ -40,14 +40,14 @@ new CronJob('0 0 * * *', function() {
 }, null, true, 'Europe/Paris');
 
 // test start
-var role = server.roles.get('379255305009102848');
+/*var role = server.roles.get('379255305009102848');
 var t = ['113252560655130624'];
 if (role) {
     _.forEach(t, function(userId) {
         console.log('apply role');
         server.members.get(userId).addRole(role);
     });
-}
+}*/
 // test end
 
 bot.on('ready', function () {
