@@ -147,6 +147,8 @@ function fixPosTopLast() {
                 }
             });
 
+            console.log(data);
+
             redis.set('top-last', JSON.stringify(data));
         }
         return callback(html);
