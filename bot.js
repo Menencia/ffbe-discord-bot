@@ -40,11 +40,7 @@ bot.on('message', function (message) {
         ffbeTopYesterday(function(html) {
             message.channel.send(html);
         });
-    } else if (message.content === '!top update' && isGrandsheltKing(message)) {
-        ffbeTopUpdate();
-    } else if (message.content === '!top fix' && isGrandsheltKing(message)) {
-        fixPosTopLast();
-    } 
+    }
     else if (!message.author.bot) {
         // update top current
         redis.get('top-current', function(err, data) {
@@ -130,28 +126,6 @@ function ffbeTopYesterday(callback) {
             var html = "Aucun classement disponible pour l'instant. Attendez minuit !";
         }
         return callback(html);
-    });
-}
-
-function fixPosTopLast() {
-    redis.get('top-last',function(err, data) {
-        if (data) {
-            data = JSON.parse(data);
-            
-            _.forEach(data, function(user, idx) {
-                if (idx === 0) {
-                    user.pos = '+4';
-                }
-                if (idx === 1) {
-                    user.pos = '+2';
-                }
-                if (idx === 6) {
-                    user.pos = '+1';
-                }
-            });
-
-            redis.set('top-last', JSON.stringify(data));
-        }
     });
 }
 
