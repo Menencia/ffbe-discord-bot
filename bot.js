@@ -139,19 +139,19 @@ function fixPosTopLast() {
             data = JSON.parse(data);
             
             _.forEach(data, function(user, idx) {
-                if (user.pos[1] === '+') {
-                    user.pos = user.pos.substring(1);
+                if (idx === 0) {
+                    user.pos = '+4';
                 }
-                if (idx === 2 || idx === 4) {
-                    user.pos = '-' + user.pos;
+                if (idx === 1) {
+                    user.pos = '+2';
+                }
+                if (idx === 6) {
+                    user.pos = '+1';
                 }
             });
 
-            console.log(data);
-
             redis.set('top-last', JSON.stringify(data));
         }
-        return callback(html);
     });
 }
 
