@@ -1,6 +1,5 @@
 var Discord = require('discord.js');
 var bot = new Discord.Client();
-//var server = new Discord.Server('185745050217611264');
 
 var _ = require('lodash');
 
@@ -8,54 +7,14 @@ var Redis = require('ioredis');
 var redis = new Redis(process.env.REDIS_URL);
 
 var CronJob = require('cron').CronJob;
-new CronJob('0 0 * * *', function() {
-    redis.get('top-current',function(err, data) {
-        resetTopCurrent();
-        data = JSON.parse(data);
-        // pick 10 first
-        data = _.take(data, 10);
-        buildTopLast(data, function(oldUsers, newUsers) {
-            // "ffbe-bot" channel
-            var channel = bot.channels.get('380036130864758785');
-            channel.send('Le classement a été mis à jour !');
-            ffbeTopYesterday(function(html) {
-                channel.send(html);
-            });
-            // 'FFBraveExvius (FR)' server
-            var guild = bot.guilds.get('185745050217611264');
-            if (guild && guild.available) {
-                // 'Veilleurs' role
-                var role = guild.roles.get('379255305009102848');
-                if (role) {
-                    _.forEach(oldUsers, function(userId) {
-                        guild.members.get(userId).removeRole(role);
-                    });
-                    _.forEach(newUsers, function(userId) {
-                        guild.members.get(userId).addRole(role);
-                    });
-                }
-            }
-        });
-    });
-}, null, true, 'Europe/Paris');
-
-// test start
-/*var role = server.roles.get('379255305009102848');
-var t = ['113252560655130624'];
-if (role) {
-    _.forEach(t, function(userId) {
-        console.log('apply role');
-        server.members.get(userId).addRole(role);
-    });
-}*/
-// test end
 
 bot.on('ready', function () {
     redis.get('top-current', function(err, data) {
         if (!data) {
             resetTopCurrent();        
         }
-    })
+    });
+    initCron();
 });
 
 bot.on('message', function (message) {
@@ -81,6 +40,19 @@ bot.on('message', function (message) {
         ffbeTopYesterday(function(html) {
             message.channel.send(html);
         });
+    } else if (message.content === '!addroles') {
+        redis.get('top-current',function(err, data) {
+            var guild = bot.guilds.get('185745050217611264');
+            if (guild && guild.available) {
+                // 'Veilleurs' role
+                var role = '379255305009102848';
+                if (role) {
+                    _.forEach(data, function(user) {
+                        guild.members.get(user.id).addRole(role);
+                    });
+                }
+            }
+        });
     } else if (message.content === '!top clear') {
         // 'FFBraveExvius (FR)' server
         var guild = bot.guilds.get('185745050217611264');
@@ -105,6 +77,39 @@ bot.on('message', function (message) {
 bot.login(process.env.BOT_TOKEN);
 
 // FUNCTIONS //
+
+function initCron() {
+    new CronJob('0 0 * * *', function() {
+        redis.get('top-current',function(err, data) {
+            resetTopCurrent();
+            data = JSON.parse(data);
+            // pick 10 first
+            data = _.take(data, 10);
+            buildTopLast(data, function(oldUsers, newUsers) {
+                // "ffbe-bot" channel
+                var channel = bot.channels.get('380036130864758785');
+                channel.send('Le classement a été mis à jour !');
+                ffbeTopYesterday(function(html) {
+                    channel.send(html);
+                });
+                // 'FFBraveExvius (FR)' server
+                var guild = bot.guilds.get('185745050217611264');
+                if (guild && guild.available) {
+                    // 'Veilleurs' role
+                    var role = '379255305009102848';
+                    if (role) {
+                        _.forEach(oldUsers, function(userId) {
+                            guild.members.get(userId).removeRole(role);
+                        });
+                        _.forEach(newUsers, function(userId) {
+                            guild.members.get(userId).addRole(role);
+                        });
+                    }
+                }
+            });
+        });
+    }, null, true, 'Europe/Paris');
+}
 
 function ffbeTopYesterday(callback) {
     redis.get('top-last',function(err, data) {
