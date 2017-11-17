@@ -100,27 +100,15 @@ function ffbeTopToday(callback) {
         // pick 10 first
         data = _.take(data, 10);
         // prettify
-        var pad = ' ';
-        var table = new AsciiTable();
-        table
-            .setTitle("TOP (aujourd'hui")
-            .setHeading(
-                AsciiTable.alignLeft('#', 3, pad), 
-                AsciiTable.alignLeft('Pseudo', 100, pad), 
-                AsciiTable.alignLeft('Pts', 4, pad), 
-                AsciiTable.alignLeft('Date', 6, pad)
-            );
+        var html = ' ' + "\n" + "** TOP (aujourd'hui) **" + "\n";
         _.forEach(data, function(user, idx) {
             var displayName = getDisplayName(user);
             var date = moment(user.date).add(1, 'hour').format('LT');
-            table.addRow(
-                AsciiTable.alignLeft(idx+1, 3, pad), 
-                AsciiTable.alignLeft(displayName, 100, pad), 
-                AsciiTable.alignLeft(user.pts, 4, pad), 
-                AsciiTable.alignLeft(date, 6, pad)
-            );
+            html += '[' + (idx+1) + '] ' + displayName + ' (' + user.pts + 'pts) ';
+            html += '@ ' + date;
+            html += "\n";
         });
-        return callback(table.toString());
+        return callback(html);
     });
 }
 
@@ -129,10 +117,11 @@ function ffbeTopYesterday(callback) {
         if (data) {
             data = JSON.parse(data);
             // prettify
-            var date = moment().subtract(1, 'day').format('LL');
+            var date = moment().subtract(1, 'day').add(1, 'hour').format('LL');
             var html = ' ' + "\n" + '** TOP (' + date + ') **' + "\n";
             _.forEach(data, function(user, idx) {
-                html += '[' + (idx+1) + '](' + user.pos + ') ' + getDisplayName(user) + ' (' + user.pts + 'pts)';
+                var displayName = getDisplayName(user);
+                html += '[' + (idx+1) + '](' + user.pos + ') ' + displayName + ' (' + user.pts + 'pts)';
                 html += "\n";
             });
         } else {
@@ -205,7 +194,7 @@ function addPosToLast(tmp, last) {
     _.forEach(tmp, function(user, idx){
         var found = _.findIndex(last, {id: user.id});
         if (found > -1) {
-            var diff = idx - found;
+            var diff = found - idx;
             if (diff === 0) {
                 user.pos = '=';
             } else if (diff > 0) {
