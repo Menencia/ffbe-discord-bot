@@ -22,7 +22,7 @@ bot.on('ready', function () {
             resetTopCurrent();        
         }
     });
-    initCron();
+    initCron(bot);
 });
 
 bot.on('message', function (message) {
@@ -53,7 +53,7 @@ function isGrandsheltKing(message) {
     return message.member.roles.has(ROLE_ADMIN);
 }
 
-function initCron() {
+function initCron(botRef) {
     new CronJob('0 0 * * *', function() {
         redis.get('top-current',function(err, data) {
             resetTopCurrent();
@@ -61,12 +61,12 @@ function initCron() {
             // pick 10 first
             data = _.take(data, 10);
             buildTopLast(data, function(oldUsers, newUsers) {
-                var channel = bot.channels.get(CHANNEL_FFBE);
+                var channel = botRef.channels.get(CHANNEL_FFBE);
                 channel.send('Le classement a été mis à jour !');
                 ffbeTopYesterday(function(html) {
                     channel.send(html);
                 });
-                var guild = bot.guilds.get(GUILD_FFBE);
+                var guild = botRef.guilds.get(GUILD_FFBE);
                 if (guild && guild.available) {
                     _.forEach(oldUsers, function(userId) {
                         guild.members.get(userId).removeRole(ROLE_GUARDIANS);
@@ -80,6 +80,20 @@ function initCron() {
     }, null, true, 'Europe/Paris');
 }
 
+function getDisplayName(botRef, user) {
+    var guild = botRef.guilds.get(GUILD_FFBE);
+    if (guild && guild.available) {
+        var user = guild.members.get(userId);
+        var html;
+        html = '<font color="' + user.displayHexColor + '">';
+        html = user.displayName;
+        html = '</font>';
+        return html;
+    } else {
+        return user.name;
+    }
+}
+
 function ffbeTopToday(callback) {
     redis.get('top-current',function(err, data) {
         data = JSON.parse(data);
@@ -88,8 +102,8 @@ function ffbeTopToday(callback) {
         // prettify
         var html = ' ' + "\n" + "** TOP (aujourd'hui) **" + "\n";
         _.forEach(data, function(user, idx) {
-            html += '[' + (idx+1) + '] ' + user.name + ' (' + user.pts + 'pts) @ ';
-            html += moment(user.date).format('LT');
+            html += '[' + (idx+1) + '] ' + getDisplayName(bot, user.id) + ' (' + user.pts + 'pts) @ ';
+            html += moment(user.date).add(1, 'hour').format('LT');
             html += "\n";
         });
         return callback(html);
@@ -104,7 +118,7 @@ function ffbeTopYesterday(callback) {
             var date = moment().subtract(1, 'day').format('LL');
             var html = ' ' + "\n" + '** TOP (' + date + ') **' + "\n";
             _.forEach(data, function(user, idx) {
-                html += '[' + (idx+1) + '](' + user.pos + ') ' + user.name + ' (' + user.pts + 'pts)';
+                html += '[' + (idx+1) + '](' + user.pos + ') ' + getDisplayName(bot, user.id) + ' (' + user.pts + 'pts)';
                 html += "\n";
             });
         } else {
