@@ -1,5 +1,6 @@
 var Discord = require('discord.js');
 var bot = new Discord.Client();
+var server = new Discord.Server('185745050217611264');
 
 var _ = require('lodash');
 
@@ -39,16 +40,12 @@ new CronJob('0 0 * * *', function() {
 }, null, true, 'Europe/Paris');
 
 // test start
-console.log('test started');
-console.log(bot.guilds.find('id', '185745050217611264'));
-var guild = bot.guilds.get('185745050217611264');
-if (guild && guild.available) {
-    console.log('guild found');
-    var role = guild.roles.get('379255305009102848');
-    var t = ['113252560655130624'];
+var role = server.roles.get('379255305009102848');
+var t = ['113252560655130624'];
+if (role) {
     _.forEach(t, function(userId) {
         console.log('apply role');
-        guild.members.get(userId).addRole(role);
+        server.members.get(userId).addRole(role);
     });
 }
 // test end
