@@ -83,7 +83,7 @@ function initCron(botRef) {
 function getDisplayName(botRef, user) {
     var guild = botRef.guilds.get(GUILD_FFBE);
     if (guild && guild.available) {
-        var user = guild.members.get(userId);
+        var user = guild.members.get(user.id);
         var html;
         html = '<font color="' + user.displayHexColor + '">';
         html = user.displayName;
