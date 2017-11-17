@@ -24,7 +24,9 @@ bot.on('ready', function () {
             resetTopCurrent();        
         }
     });
-    initCron(bot);
+    new CronJob('0 0 * * *', function() {
+        ffbeTopUpdate();
+    }, null, true, 'Europe/Paris');
 });
 
 bot.on('message', function (message) {
@@ -38,6 +40,8 @@ bot.on('message', function (message) {
         ffbeTopYesterday(function(html) {
             message.channel.send(html);
         });
+    } else if (message.content === '!top update' && isGrandsheltKing(message)) {
+        ffbeTopUpdate();
     } 
     else if (!message.author.bot) {
         // update top current
@@ -55,35 +59,33 @@ function isGrandsheltKing(message) {
     return message.member.roles.has(ROLE_ADMIN);
 }
 
-function initCron(botRef) {
-    new CronJob('0 0 * * *', function() {
-        redis.get('top-current',function(err, data) {
-            resetTopCurrent();
-            data = JSON.parse(data);
-            // pick 10 first
-            data = _.take(data, 10);
-            buildTopLast(data, function(oldUsers, newUsers) {
-                var channel = botRef.channels.get(CHANNEL_FFBE);
-                channel.send('Le classement a été mis à jour !');
-                ffbeTopYesterday(function(html) {
-                    channel.send(html);
-                });
-                var guild = botRef.guilds.get(GUILD_FFBE);
-                if (guild && guild.available) {
-                    _.forEach(oldUsers, function(userId) {
-                        guild.members.get(userId).removeRole(ROLE_GUARDIANS);
-                    });
-                    _.forEach(newUsers, function(userId) {
-                        guild.members.get(userId).addRole(ROLE_GUARDIANS);
-                    });
-                }
+function ffbeTopUpdate() {
+    redis.get('top-current',function(err, data) {
+        resetTopCurrent();
+        data = JSON.parse(data);
+        // pick 10 first
+        data = _.take(data, 10);
+        buildTopLast(data, function(oldUsers, newUsers) {
+            var channel = bot.channels.get(CHANNEL_FFBE);
+            channel.send('Le classement a été mis à jour !');
+            ffbeTopYesterday(function(html) {
+                channel.send(html);
             });
+            var guild = bot.guilds.get(GUILD_FFBE);
+            if (guild && guild.available) {
+                _.forEach(oldUsers, function(userId) {
+                    guild.members.get(userId).removeRole(ROLE_GUARDIANS);
+                });
+                _.forEach(newUsers, function(userId) {
+                    guild.members.get(userId).addRole(ROLE_GUARDIANS);
+                });
+            }
         });
-    }, null, true, 'Europe/Paris');
+    });
 }
 
-function getDisplayName(botRef, user) {
-    var guild = botRef.guilds.get(GUILD_FFBE);
+function getDisplayName(user) {
+    var guild = bot.guilds.get(GUILD_FFBE);
     if (guild && guild.available) {
         var u = guild.members.get(user.id);
         return (u ? u.displayName : user.name);
@@ -109,7 +111,7 @@ function ffbeTopToday(callback) {
                 AsciiTable.alignLeft('Date', 6, pad)
             );
         _.forEach(data, function(user, idx) {
-            var displayName = getDisplayName(bot, user);
+            var displayName = getDisplayName(user);
             var date = moment(user.date).add(1, 'hour').format('LT');
             table.addRow(
                 AsciiTable.alignLeft(idx+1, 3, pad), 
@@ -130,7 +132,7 @@ function ffbeTopYesterday(callback) {
             var date = moment().subtract(1, 'day').format('LL');
             var html = ' ' + "\n" + '** TOP (' + date + ') **' + "\n";
             _.forEach(data, function(user, idx) {
-                html += '[' + (idx+1) + '](' + user.pos + ') ' + getDisplayName(bot, user) + ' (' + user.pts + 'pts)';
+                html += '[' + (idx+1) + '](' + user.pos + ') ' + getDisplayName(user) + ' (' + user.pts + 'pts)';
                 html += "\n";
             });
         } else {
