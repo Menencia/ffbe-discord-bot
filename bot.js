@@ -98,15 +98,17 @@ function ffbeTopToday(callback) {
         // pick 10 first
         data = _.take(data, 10);
         // prettify
-        var html = ' ' + "\n" + "** TOP (aujourd'hui) **" + "\n";
+        var table = new AsciiTable();
+        table
+            .removeBorder()
+            .setTitle("TOP (aujourd'hui)")
+            .setHeading('#', 'Pseudo', 'Pts', 'Date');
         _.forEach(data, function(user, idx) {
             var displayName = getDisplayName(user);
             var date = moment(user.date).add(1, 'hour').format('LT');
-            html += '[' + (idx+1) + '] ' + displayName + ' (' + user.pts + 'pts) ';
-            html += '@ ' + date;
-            html += "\n";
+            table.addRow(idx+1, displayName, user.pts, date);
         });
-        return callback(html);
+        return callback('```' + table + '```');
     });
 }
 
