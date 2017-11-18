@@ -104,8 +104,8 @@ function ffbeTopToday(callback) {
             .setBorder(' ', '-', ' ', ' ')
             .setTitle('📋 TOP @ ' + date)
             .setHeading('#', 'Pseudo', 'Pts', 'D. msg')
-            .setHeadingAlign(AsciiTable.alignRight, 0)
-            .setHeadingAlign(AsciiTable.alignLeft, 1);
+            .setHeadingAlign(AsciiTable.RIGHT, 0)
+            .setHeadingAlign(AsciiTable.LEFT, 1);
         _.forEach(data, function(user, idx) {
             var displayName = getDisplayName(user);
             var date = moment(user.date).add(1, 'hour').format('LT');
@@ -127,8 +127,8 @@ function ffbeTopYesterday(callback) {
                 .setBorder(' ', '-', ' ', ' ')
                 .setTitle('📋 TOP (' + date + ')')
                 .setHeading('#', '', 'Pseudo', 'Pts')
-                .setHeadingAlign(AsciiTable.alignRight, 0)
-                .setHeadingAlign(AsciiTable.alignLeft, 2);
+                .setHeadingAlign(AsciiTable.RIGHT, 0)
+                .setHeadingAlign(AsciiTable.LEFT, 2);
             _.forEach(data, function(user, idx) {
                 var displayName = getDisplayName(user);
                 table.addRow(idx+1, user.pos, displayName, user.pts);
