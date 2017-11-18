@@ -27,6 +27,10 @@ bot.on('ready', function () {
     new CronJob('0 0 * * *', function() {
         ffbeTopUpdate();
     }, null, true, 'Europe/Paris');
+    
+    new CronJob('*/1 * * * *', function() {
+        console.log('Every mins: 1 notification');
+    }, null, true, 'Europe/Paris');
 });
 
 bot.on('message', function (message) {
