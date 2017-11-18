@@ -184,7 +184,7 @@ function buildTopLast(data, callback) {
                 id: user.id,
                 name: user.name,
                 pts: user.pts,
-                pos: ''
+                pos: 'N'
             });
         });
         if (last) {
@@ -208,7 +208,7 @@ function addPosToLast(tmp, last) {
         if (found > -1) {
             var diff = found - idx;
             if (diff === 0) {
-                user.pos = '=';
+                user.pos = '';
             } else if (diff > 0) {
                 user.pos = diff;
             } else if (diff < 0) {
