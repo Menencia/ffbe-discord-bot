@@ -98,10 +98,11 @@ function ffbeTopToday(callback) {
         // pick 10 first
         data = _.take(data, 10);
         // prettify
+        var date = moment().add(1, 'hour').format('LT');
         var table = new AsciiTable();
         table
             .setBorder(' ', '-', ' ', ' ')
-            .setTitle("📋 TOP (aujourd'hui)")
+            .setTitle('📋 TOP @ ' + date)
             .setHeading('#', 'Pseudo', 'Pts', 'D. msg')
             .setHeadingAlign(AsciiTable.alignRight, 0)
             .setHeadingAlign(AsciiTable.alignLeft, 1);
@@ -132,7 +133,7 @@ function ffbeTopYesterday(callback) {
                 var displayName = getDisplayName(user);
                 table.addRow(idx+1, user.pos, displayName, user.pts);
             });
-            table.setAlign(1, AsciiTable.alignRight);
+            table.setAlign(1, AsciiTable.RIGHT);
 
             html = '```js' + "\n" + table + "\n" + '```';
         } else {
