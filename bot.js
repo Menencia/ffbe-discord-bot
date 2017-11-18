@@ -128,13 +128,13 @@ function ffbeTopYesterday(callback) {
                 .setTitle('📋 TOP (' + date + ')')
                 .setHeading('#', '', 'Pseudo', 'Pts')
                 .setHeadingAlign(AsciiTable.alignRight, 0)
-                .setHeadingAlign(AsciiTable.alignRight, 1)
                 .setHeadingAlign(AsciiTable.alignLeft, 2);
             _.forEach(data, function(user, idx) {
                 var displayName = getDisplayName(user);
                 var id = (idx === 0) ? '👑': idx+1;
-                table.addRow(idx, user.pos, displayName, user.pts);
+                table.addRow(id, user.pos, displayName, user.pts);
             });
+            table.setAlign(AsciiTable.alignRight, 1);
 
             html = '```js' + "\n" + table + "\n" + '```';
         } else {
