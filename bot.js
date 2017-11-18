@@ -108,8 +108,7 @@ function ffbeTopToday(callback) {
         _.forEach(data, function(user, idx) {
             var displayName = getDisplayName(user);
             var date = moment(user.date).add(1, 'hour').format('LT');
-            var id = (idx === 0) ? '👑': idx+1;
-            table.addRow(id, displayName, user.pts, date);
+            table.addRow(idx+1, displayName, user.pts, date);
         });
         var html = '```js' + "\n" + table + "\n" + '```';
         return callback(html);
@@ -131,10 +130,9 @@ function ffbeTopYesterday(callback) {
                 .setHeadingAlign(AsciiTable.alignLeft, 2);
             _.forEach(data, function(user, idx) {
                 var displayName = getDisplayName(user);
-                var id = (idx === 0) ? '👑': idx+1;
-                table.addRow(id, user.pos, displayName, user.pts);
+                table.addRow(idx+1, user.pos, displayName, user.pts);
             });
-            table.setAlign(AsciiTable.alignRight, 1);
+            table.setAlign(1, AsciiTable.alignRight);
 
             html = '```js' + "\n" + table + "\n" + '```';
         } else {
