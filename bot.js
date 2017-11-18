@@ -100,9 +100,10 @@ function ffbeTopToday(callback) {
         // prettify
         var table = new AsciiTable();
         table
+            .setBorder(' ', '-', ' ', ' ')
             .setTitle("TOP (aujourd'hui)")
             .setHeading('#', 'Pseudo', 'Pts', 'Date')
-            .setHeadingAlignLeft(1);
+            .setHeadingAlign(AsciiTable.alignLeft, 1);
         _.forEach(data, function(user, idx) {
             var displayName = getDisplayName(user);
             var date = moment(user.date).add(1, 'hour').format('LT');
@@ -120,9 +121,10 @@ function ffbeTopYesterday(callback) {
             var date = moment().subtract(1, 'day').add(1, 'hour').format('LL');
             var table = new AsciiTable();
             table
+                .setBorder(' ', '-', ' ', ' ')
                 .setTitle('TOP (' + date + ')')
                 .setHeading('#', '', 'Pseudo', 'Pts')
-                .setHeadingAlignLeft(1);
+                .setHeadingAlign(AsciiTable.alignLeft, 2);
             _.forEach(data, function(user, idx) {
                 var displayName = getDisplayName(user);
                 table.addRow(idx+1, user.pos, displayName, user.pts);
