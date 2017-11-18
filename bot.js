@@ -119,6 +119,7 @@ function ffbeTopToday(callback) {
 
 function ffbeTopYesterday(callback) {
     redis.get('top-last',function(err, data) {
+        console.log(data);
         if (data) {
             data = JSON.parse(data);
             // prettify
