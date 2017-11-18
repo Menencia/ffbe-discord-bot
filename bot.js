@@ -101,16 +101,18 @@ function ffbeTopToday(callback) {
         var table = new AsciiTable();
         table
             .setBorder(' ', '-', ' ', ' ')
-            .setTitle("TOP (aujourd'hui)")
+            .setTitle("📋 TOP (aujourd'hui)")
             .setHeading('#', 'Pseudo', 'Pts', 'D. msg')
             .setHeadingAlign(AsciiTable.alignRight, 0)
             .setHeadingAlign(AsciiTable.alignLeft, 1);
         _.forEach(data, function(user, idx) {
             var displayName = getDisplayName(user);
             var date = moment(user.date).add(1, 'hour').format('LT');
-            table.addRow(idx+1, displayName, user.pts, date);
+            var id = (idx === 0) ? '👑': idx+1;
+            table.addRow(id, displayName, user.pts, date);
         });
-        return callback('```' + table + '```');
+        var html = '```js' + "\n" + table + "\n" + '```';
+        return callback(html);
     });
 }
 
@@ -123,17 +125,18 @@ function ffbeTopYesterday(callback) {
             var table = new AsciiTable();
             table
                 .setBorder(' ', '-', ' ', ' ')
-                .setTitle('TOP (' + date + ')')
+                .setTitle('📋 TOP (' + date + ')')
                 .setHeading('#', '', 'Pseudo', 'Pts')
                 .setHeadingAlign(AsciiTable.alignRight, 0)
                 .setHeadingAlign(AsciiTable.alignRight, 1)
                 .setHeadingAlign(AsciiTable.alignLeft, 2);
             _.forEach(data, function(user, idx) {
                 var displayName = getDisplayName(user);
-                table.addRow(idx+1, user.pos, displayName, user.pts);
+                var id = (idx === 0) ? '👑': idx+1;
+                table.addRow(idx, user.pos, displayName, user.pts);
             });
 
-            html = '```' + table + '```';
+            html = '```js' + "\n" + table + "\n" + '```';
         } else {
             var html = "Aucun classement disponible pour l'instant. Attendez minuit !";
         }
