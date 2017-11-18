@@ -100,9 +100,9 @@ function ffbeTopToday(callback) {
         // prettify
         var table = new AsciiTable();
         table
-            .removeBorder()
             .setTitle("TOP (aujourd'hui)")
-            .setHeading('#', 'Pseudo', 'Pts', 'Date');
+            .setHeading('#', 'Pseudo', 'Pts', 'Date')
+            .setHeadingAlignLeft(1);
         _.forEach(data, function(user, idx) {
             var displayName = getDisplayName(user);
             var date = moment(user.date).add(1, 'hour').format('LT');
@@ -118,12 +118,17 @@ function ffbeTopYesterday(callback) {
             data = JSON.parse(data);
             // prettify
             var date = moment().subtract(1, 'day').add(1, 'hour').format('LL');
-            var html = ' ' + "\n" + '** TOP (' + date + ') **' + "\n";
+            var table = new AsciiTable();
+            table
+                .setTitle('TOP (' + date + ')')
+                .setHeading('#', '', 'Pseudo', 'Pts')
+                .setHeadingAlignLeft(1);
             _.forEach(data, function(user, idx) {
                 var displayName = getDisplayName(user);
-                html += '[' + (idx+1) + '](' + user.pos + ') ' + displayName + ' (' + user.pts + 'pts)';
-                html += "\n";
+                table.addRow(idx+1, user.pos, displayName, user.pts);
             });
+
+            html = '```' + table + '```';
         } else {
             var html = "Aucun classement disponible pour l'instant. Attendez minuit !";
         }
