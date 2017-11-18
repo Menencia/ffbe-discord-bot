@@ -102,7 +102,8 @@ function ffbeTopToday(callback) {
         table
             .setBorder(' ', '-', ' ', ' ')
             .setTitle("TOP (aujourd'hui)")
-            .setHeading('#', 'Pseudo', 'Pts', 'Date')
+            .setHeading('#', 'Pseudo', 'Pts', 'D. msg')
+            .setHeadingAlign(AsciiTable.alignRight, 0)
             .setHeadingAlign(AsciiTable.alignLeft, 1);
         _.forEach(data, function(user, idx) {
             var displayName = getDisplayName(user);
@@ -124,6 +125,8 @@ function ffbeTopYesterday(callback) {
                 .setBorder(' ', '-', ' ', ' ')
                 .setTitle('TOP (' + date + ')')
                 .setHeading('#', '', 'Pseudo', 'Pts')
+                .setHeadingAlign(AsciiTable.alignRight, 0)
+                .setHeadingAlign(AsciiTable.alignRight, 1)
                 .setHeadingAlign(AsciiTable.alignLeft, 2);
             _.forEach(data, function(user, idx) {
                 var displayName = getDisplayName(user);
