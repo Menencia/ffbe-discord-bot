@@ -93,26 +93,33 @@ function getDisplayName(user) {
 }
 
 function ffbeTopToday(callback) {
-    redis.get('top-current',function(err, data) {
-        data = JSON.parse(data);
-        // pick 10 first
-        data = _.take(data, 10);
-        // prettify
-        var date = moment().add(1, 'hour').format('LT');
-        var table = new AsciiTable();
-        table
-            .setBorder(' ', '-', ' ', ' ')
-            .setTitle('📋 TOP @ ' + date)
-            .setHeading('#', 'Pseudo', 'Pts', 'D. msg')
-            .setHeadingAlign(AsciiTable.RIGHT, 0)
-            .setHeadingAlign(AsciiTable.LEFT, 1);
-        _.forEach(data, function(user, idx) {
-            var displayName = getDisplayName(user);
-            var date = moment(user.date).add(1, 'hour').format('LT');
-            table.addRow(idx+1, displayName, user.pts, date);
+    redis.get('top-last',function(err, last) {
+        last = JSON.parse(last);
+        redis.get('top-current',function(err, data) {
+            data = JSON.parse(data);
+            // pick 10 first
+            data = _.take(data, 10);
+            // add pos
+            addPosToLast(data, last);
+            // prettify
+            var date = moment().add(1, 'hour').format('LT');
+            var table = new AsciiTable();
+            table
+                .setBorder(' ', '-', ' ', ' ')
+                .setTitle('📋 TOP @ ' + date)
+                .setHeading('#', '', 'Pseudo', 'Pts', 'D. msg')
+                .setHeadingAlign(AsciiTable.RIGHT, 0)
+                .setHeadingAlign(AsciiTable.LEFT, 2);
+            _.forEach(data, function(user, idx) {
+                var displayName = getDisplayName(user);
+                var date = moment(user.date).add(1, 'hour').format('LT');
+                table.addRow(idx+1, user.pos, displayName, user.pts, date);
+            });
+            table.setAlign(1, AsciiTable.RIGHT);
+            
+            var html = '```js' + "\n" + table + "\n" + '```';
+            return callback(html);
         });
-        var html = '```js' + "\n" + table + "\n" + '```';
-        return callback(html);
     });
 }
 
@@ -210,9 +217,9 @@ function addPosToLast(tmp, last) {
             if (diff === 0) {
                 user.pos = '';
             } else if (diff > 0) {
-                user.pos = diff;
-            } else if (diff < 0) {
                 user.pos = '+' + diff;
+            } else if (diff < 0) {
+                user.pos = diff;
             }
         }
     });
