@@ -29,7 +29,7 @@ bot.on('ready', function () {
     }, null, true, 'Europe/Paris');
     
     new CronJob('*/1 * * * *', function() {
-        console.log('Every mins: 1 notification');
+        console.log('Every mins: 1 notification (only)');
     }, null, true, 'Europe/Paris');
 });
 
