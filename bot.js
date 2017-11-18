@@ -111,7 +111,6 @@ function ffbeTopToday(callback) {
             var date = moment(user.date).add(1, 'hour').format('LT');
             table.addRow(idx+1, displayName, user.pts, date);
         });
-        table.setAlign(1, AsciiTable.RIGHT);
 
         var html = '```js' + "\n" + table + "\n" + '```';
         return callback(html);
