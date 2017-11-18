@@ -184,7 +184,7 @@ function buildTopLast(data, callback) {
                 id: user.id,
                 name: user.name,
                 pts: user.pts,
-                pos: 'N'
+                pos: ''
             });
         });
         if (last) {
