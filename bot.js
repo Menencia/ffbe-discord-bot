@@ -24,7 +24,7 @@ bot.on('ready', function () {
             resetTopCurrent();        
         }
     });
-    new CronJob('*/5 * * * *', function() {
+    new CronJob('0 0 * * *', function() {
         console.log('Updating top...');
         ffbeTopUpdate();
         console.log('Top updated!');
