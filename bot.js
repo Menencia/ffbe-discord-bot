@@ -26,14 +26,13 @@ bot.on('ready', function () {
             resetTopCurrent();        
         }
     });
-    new CronJob('0 0 * * *', function() {
-        if (lock) {
-            console.log('Warning: blocked illegal update!');
-            return;
-        }
-        lock = true;
-        ffbeTopUpdate();
-    }, null, true, 'Europe/Paris');
+    new CronJob(
+        '0 0 * * *', 
+        _.throttle(ffbeTopUpdate, 2000, {leading:true, trailing:false}), 
+        null, 
+        true, 
+        'Europe/Paris'
+    )
 });
 
 bot.on('message', function (message) {
@@ -65,7 +64,12 @@ function isGrandsheltKing(message) {
 }
 
 function ffbeTopUpdate() {
-   redis.get('top-current',function(err, data) {
+    if (lock) {
+        console.log('Warning: blocked illegal update!');
+        return;
+    }
+    lock = true;
+    redis.get('top-current',function(err, data) {
         console.log('top current retrived!');
         resetTopCurrent();
         data = JSON.parse(data);
