@@ -18,6 +18,8 @@ var CHANNEL_FFBE = '380036130864758785';
 var ROLE_ADMIN = '376143187569410057';
 var ROLE_GUARDIANS = '379255305009102848';
 
+var lock = false;
+
 bot.on('ready', function () {
     redis.get('top-current', function(err, data) {
         if (!data) {
@@ -25,9 +27,12 @@ bot.on('ready', function () {
         }
     });
     new CronJob('0 0 * * *', function() {
-        console.log('Updating top...');
+        if (lock) {
+            console.log('Warning: blocked illegal update!');
+            return;
+        }
+        lock = true;
         ffbeTopUpdate();
-        console.log('Top updated!');
     }, null, true, 'Europe/Paris');
 });
 
@@ -42,35 +47,6 @@ bot.on('message', function (message) {
         ffbeTopYesterday(function(html) {
             message.channel.send(html);
         });
-    } else if (message.content === '!top restore' && isGrandsheltKing(message)) {
-        topLast = [
-            {id: '187697098010001408', name: 'Breizh'},
-            {id: '326147840311164928', name: 'Nova'},
-            {id: '108212530031099904', name: 'Sykli'},
-            {id: '370705265323933698', name: 'ItsYaBoiXD'},
-            {id: '159377665080426496', name: 'Zenos de MillenaireZenos sur YT'},
-            {id: '219042161700634624', name: 'Imel'},
-            {id: '125735962524385280', name: 'Omage'},
-            {id: '298410733035585536', name: 'Heios Aldnoah'},
-            {id: '237234654657118209', name: 'Yangus'},
-            {id: '257460645417451520', name: 'Argosax    Papy ,A2 ,TT, Fryevia'}
-        ];
-
-        topCurrent = [
-            {id: '108212530031099904', name: 'Sykli', pts: '354'},
-            {id: '159377665080426496', name: 'Zenos de MillenaireZenos sur YT', pts: '226'},
-            {id: '326147840311164928', name: 'Nova', pts: '220'},
-            {id: '198905115439136769', name: 'Yuu', pts: '155'},
-            {id: '187697098010001408', name: 'Breizh', pts: '151'},
-            {id: '370705265323933698', name: 'ItsYaBoiXD', pts: '124'},
-            {id: '281792788016660480', name: 'Clovis Le Con', pts: '124'},
-            {id: '237234654657118209', name: 'Yangus', pts: '84'},
-            {id: '298410733035585536', name: 'Heios Aldnoah', pts: '70'},
-            {id: '219042161700634624', name: 'Imel', pts: '55'}
-        ];
-
-        redis.set('top-last', JSON.stringify(topLast));
-        redis.set('top-current', JSON.stringify(topCurrent));
     }
     else if (!message.author.bot) {
         // update top current
@@ -89,7 +65,7 @@ function isGrandsheltKing(message) {
 }
 
 function ffbeTopUpdate() {
-    redis.get('top-current',function(err, data) {
+   redis.get('top-current',function(err, data) {
         console.log('top current retrived!');
         resetTopCurrent();
         data = JSON.parse(data);
@@ -111,6 +87,8 @@ function ffbeTopUpdate() {
                     guild.members.get(userId).addRole(ROLE_GUARDIANS);
                 });
             }
+            lock = false;
+            console.log('Top updated!');
         });
     });
 }
