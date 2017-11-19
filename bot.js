@@ -24,8 +24,10 @@ bot.on('ready', function () {
             resetTopCurrent();        
         }
     });
-    new CronJob('0 0 * * *', function() {
+    new CronJob('*/5 * * * *', function() {
+        console.log('Updating top...');
         ffbeTopUpdate();
+        console.log('Top updated!');
     }, null, true, 'Europe/Paris');
 });
 
@@ -119,7 +121,6 @@ function ffbeTopToday(callback) {
 
 function ffbeTopYesterday(callback) {
     redis.get('top-last',function(err, data) {
-        console.log(data);
         if (data) {
             data = JSON.parse(data);
             // prettify
@@ -194,14 +195,14 @@ function buildTopLast(data, callback) {
             addPosToLast(tmp, last);
             var tmpIds = _.map(tmp, 'id');
             var lastIds = _.map(last, 'id');
-            oldUsers = _.difference(lastIds, tmpIds);
+            oldUsers = _.difference(lastIds, tmpIds); // top-last={ancien top-last} et tmp=[]
             newUsers = _.difference(tmpIds, lastIds);
         } else {
             newUsers = tmpIds;
         }
         redis.set('top-last', JSON.stringify(tmp));
         callback(oldUsers, newUsers);
-    })
+    });
 }
 
 function addPosToLast(tmp, last) {
