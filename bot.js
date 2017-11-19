@@ -24,7 +24,7 @@ bot.on('ready', function () {
             resetTopCurrent();        
         }
     });
-    new CronJob('*/5 * * * *', function() {
+    new CronJob('0 0 * * *', function() {
         console.log('Updating top...');
         ffbeTopUpdate();
         console.log('Top updated!');
@@ -42,6 +42,8 @@ bot.on('message', function (message) {
         ffbeTopYesterday(function(html) {
             message.channel.send(html);
         });
+    } else if (message.content === '!top restore' && isGrandsheltKing(message)) {
+        redis.set('top-last');
     }
     else if (!message.author.bot) {
         // update top current
