@@ -14,6 +14,7 @@ moment.locale('fr');
 var AsciiTable = require('ascii-table');
 
 var GUILD_FFBE = '185745050217611264';
+var CHANNEL_HOME = '185745050217611264';
 var CHANNEL_FFBE = '380036130864758785';
 var ROLE_ADMIN = '376143187569410057';
 var ROLE_GUARDIANS = '379255305009102848';
@@ -33,6 +34,13 @@ bot.on('ready', function () {
         true, 
         'Europe/Paris'
     )
+});
+
+bot.on('guildMemberAdd', function(user) {
+    var channel = user.guild.channels.get(CHANNEL_HOME);
+    if (channel) {
+        channel.send("Hey ! " + user.displayName + " nous a rejoint ! Vite, souhaitons-lui la bienvenue pour qu'il se sente comme chez lui \o/");
+    }
 });
 
 bot.on('message', function (message) {
