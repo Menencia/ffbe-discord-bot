@@ -39,7 +39,7 @@ bot.on('ready', function () {
 bot.on('guildMemberAdd', function(user) {
     var channel = user.guild.channels.get(CHANNEL_HOME);
     if (channel) {
-        channel.send("Hey ! " + user.displayName + " nous a rejoint ! Vite, souhaitons-lui la bienvenue pour qu'il se sente comme chez lui \o/");
+        channel.send("Hey ! **" + user.displayName + "** nous a rejoint ! Vite, souhaitons-lui la bienvenue pour qu'il se sente comme chez lui \o/");
     }
 });
 
@@ -176,7 +176,7 @@ function updateTopCurrent(current, author) {
     var user = _.find(current, ['id', author.id]);
     if (user) {
         // spam checker
-        if (_.now() - user.date < 10*1000) {
+        if (_.now() - user.date < 60*1000) {
             return;
         }
         // update user
