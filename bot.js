@@ -82,8 +82,6 @@ bot.on('message', function (message) {
         ffbeTopYesterday(function(html) {
             message.channel.send(html);
         });
-    } else if (message.content === '!test' && isGrandsheltKing(message)) {
-        message.channel.send(`<@{message.author.username} + {message.author.discriminator}>`);
     }
     else if (!message.author.bot) {
         // update top current
