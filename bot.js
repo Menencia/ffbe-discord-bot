@@ -61,11 +61,11 @@ bot.on('ready', function () {
     )
 });
 
-bot.on('guildMemberAdd', function(user) {
-    var channel = user.guild.channels.get(CHANNEL_HOME);
+bot.on('guildMemberAdd', function(guildUser) {
+    var channel = guildUser.guild.channels.get(CHANNEL_HOME);
     if (channel) {
         var rawMsg = _.sample(messages);
-        var name = (user.user) ? user.user.tag: '**' + user.displayName + '**';
+        var name = (guildUser.user) ? guildUser.user.tag: '**' + guildUser.displayName + '**';
         var msg = rawMsg.replace(new RegExp('%user', 'g'), name);
         channel.send(msg);
     }
@@ -82,6 +82,8 @@ bot.on('message', function (message) {
         ffbeTopYesterday(function(html) {
             message.channel.send(html);
         });
+    } else if (message.content === '!test' && isGrandsheltKing(message)) {
+        message.channel.send(message.author.tag);
     }
     else if (!message.author.bot) {
         // update top current
