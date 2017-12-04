@@ -65,7 +65,7 @@ bot.on('guildMemberAdd', function(user) {
     var channel = user.guild.channels.get(CHANNEL_HOME);
     if (channel) {
         var rawMsg = _.sample(messages);
-        var name = '**' + user.displayName + '**';
+        var name = (user.user) ? user.user.tag: '**' + user.displayName + '**';
         var msg = rawMsg.replace(new RegExp('%user', 'g'), name);
         channel.send(msg);
     }
