@@ -83,7 +83,7 @@ bot.on('message', function (message) {
             message.channel.send(html);
         });
     } else if (message.content === '!test' && isGrandsheltKing(message)) {
-        message.channel.send('Hello to ' + message.author.toString().substring(1));
+        message.channel.send('Hello to <' + message.author.toString().substring(2));
     }
     else if (!message.author.bot) {
         // update top current
