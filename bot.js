@@ -21,6 +21,31 @@ var ROLE_GUARDIANS = '379255305009102848';
 
 var lock = false;
 
+var messages = [
+    "Le grand %user vient d'arriver !",
+    "Bienvenue, %user. On espère que tu as apporté de la pizza.",
+    "C'est %user ! Loué soit le soleil ! o/",
+    "C'est un oiseau ! C'est un avion ! J'ai rien dit, c'est juste %user.",
+    "%user vient de rejoindre le serveur. Tout le monde, faites semblant d'être occupés !",
+    "%user vient de glisser dans le serveur.",
+    "%user a bondi dans le serveur. Kangourou !!",
+    "Bienvenue, %user. Nous vous attendions ( ͡° ͜ʖ ͡°)",
+    "Hé ! Écoutez ! %user nous a rejoint !",
+    "Oh mon dieu ! %user est là.",
+    "%user est arrivé(e). La fête est terminée.",
+    "Bienvenue %user. Laissez votre vie sociale près de la porte.",
+    "Un %user a spawn dans le serveur.",
+    "Tenez-vous bien. %user a rejoint le serveur.",
+    "%user est ici pour botter des fesses et mâcher du chewing-gum. Et %user est à court de chewing-gum.",
+    "%user a rejoint le serveur ! C’est super efficace !",
+    "%user est ici, comme la prophétie l'avait annoncé.",
+    "Swoooosh. %user vient juste d’atterrir.",
+    "Les roses sont rouges, les violettes sont bleues, %user a rejoint ce lieu",
+    "%user vient d’arriver. Il est trop OP - il faut le nerf.",
+    "Bienvenue, %user. Reste un peu et écoute.",
+    "Un %user sauvage apparaît."
+];
+
 bot.on('ready', function () {
     redis.get('top-current', function(err, data) {
         if (!data) {
@@ -39,7 +64,10 @@ bot.on('ready', function () {
 bot.on('guildMemberAdd', function(user) {
     var channel = user.guild.channels.get(CHANNEL_HOME);
     if (channel) {
-        channel.send("Hey ! **" + user.displayName + "** nous a rejoint ! Vite, souhaitons-lui la bienvenue pour qu'il se sente comme chez lui \o/");
+        var rawMsg = _.sample(messages);
+        var name = '**' + user.displayName + '**';
+        var msg = rawMsg.replace(new RegExp('%user', 'g'), name);
+        channel.send(msg);
     }
 });
 
