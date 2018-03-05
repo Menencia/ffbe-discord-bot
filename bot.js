@@ -1,26 +1,28 @@
-var Discord = require('discord.js');
-var bot = new Discord.Client();
+/*
+                                       
+_/|_/|/_ _    _/. __  _  _ _/  /_ _ _/_
+/  / /_//_' /_//_\/_ /_///_/  /_//_//  
+                                       
+*/
 
-var _ = require('lodash');
-
-var Redis = require('ioredis');
-var redis = new Redis(process.env.REDIS_URL);
-
-var CronJob = require('cron').CronJob;
-
-var moment = require('moment');
-moment.locale('fr');
-
-var AsciiTable = require('ascii-table');
+/** CONFIGURATION -------------------------- */
+ // edit these next variables
 
 var GUILD_FFBE = '185745050217611264';
 var CHANNEL_HOME = '324896627649413121';
 var CHANNEL_FFBE = '380036130864758785';
 var ROLE_ADMIN = '376143187569410057';
 var ROLE_GUARDIANS = '379255305009102848';
-
-var lock = false;
-
+var MSG_DELAY = 60; // in seconds
+var DATE_LOCALE = 'fr';
+var CRON_FREQUENCE = '0 0 * * *';
+var CRON_TIMEZONE = 'Europe/Paris';
+var RANKING_UPDATED = 'Le classement a été mis à jour !';
+var NO_RANKINGS_YET = "Aucun classement disponible pour l'instant. Attendez minuit !";
+var LABEL_POS = '#';
+var LABEL_PSEUDO = 'Pseudo';
+var LABEL_PTS = 'Pts';
+var LABEL_LAST_MSG = 'D. msg';
 var messages = [
     "On ne présente plus %user, 4* natif game-breaker. Faites de la place svp.",
     "Le grand %user vient d'arriver !",
@@ -46,6 +48,27 @@ var messages = [
     "Un %user sauvage apparaît. Sa TMR est excellente. Attrapez-le !"
 ];
 
+/** ***************************************** */
+ // please do not edit below, 
+ // unless you know what you're doing
+
+var Discord = require('discord.js');
+var bot = new Discord.Client();
+
+var _ = require('lodash');
+
+var Redis = require('ioredis');
+var redis = new Redis(process.env.REDIS_URL);
+
+var CronJob = require('cron').CronJob;
+
+var moment = require('moment');
+moment.locale(DATE_LOCALE);
+
+var AsciiTable = require('ascii-table');
+
+var lock = false;
+
 bot.on('ready', function () {
     redis.get('top-current', function(err, data) {
         if (!data) {
@@ -53,11 +76,11 @@ bot.on('ready', function () {
         }
     });
     new CronJob(
-        '0 0 * * *', 
+        CRON_FREQUENCE, 
         _.throttle(ffbeTopUpdate, 2000, {leading:true, trailing:false}), 
         null, 
         true, 
-        'Europe/Paris'
+        CRON_TIMEZONE
     )
 });
 
@@ -114,7 +137,7 @@ function ffbeTopUpdate() {
         buildTopLast(data, function(oldUsers, newUsers) {
             console.log('top last built!');
             var channel = bot.channels.get(CHANNEL_FFBE);
-            channel.send('Le classement a été mis à jour !');
+            channel.send(RANKING_UPDATED);
             ffbeTopYesterday(function(html) {
                 channel.send(html);
             });
@@ -154,7 +177,7 @@ function ffbeTopToday(callback) {
         table
             .setBorder(' ', '-', ' ', ' ')
             .setTitle('📋 TOP @ ' + date)
-            .setHeading('#', 'Pseudo', 'Pts', 'D. msg')
+            .setHeading(LABEL_POS, LABEL_PSEUDO, LABEL_PTS, LABEL_LAST_MSG)
             .setHeadingAlign(AsciiTable.RIGHT, 0)
             .setHeadingAlign(AsciiTable.LEFT, 1);
         _.forEach(data, function(user, idx) {
@@ -178,7 +201,7 @@ function ffbeTopYesterday(callback) {
             table
                 .setBorder(' ', '-', ' ', ' ')
                 .setTitle('📋 TOP (' + date + ')')
-                .setHeading('#', '', 'Pseudo', 'Pts')
+                .setHeading(LABEL_POS, '', LABEL_PSEUDO, LABEL_PTS)
                 .setHeadingAlign(AsciiTable.RIGHT, 0)
                 .setHeadingAlign(AsciiTable.LEFT, 2);
             _.forEach(data, function(user, idx) {
@@ -189,7 +212,7 @@ function ffbeTopYesterday(callback) {
 
             html = '```js' + "\n" + table + "\n" + '```';
         } else {
-            var html = "Aucun classement disponible pour l'instant. Attendez minuit !";
+            var html = NO_RANKINGS_YET;
         }
         return callback(html);
     });
@@ -204,7 +227,7 @@ function updateTopCurrent(current, author) {
     var user = _.find(current, ['id', author.id]);
     if (user) {
         // spam checker
-        if (_.now() - user.date < 60*1000) {
+        if (_.now() - user.date < MSG_DELAY*1000) {
             return;
         }
         // update user
