@@ -20,7 +20,7 @@ Register this bot on Discord.
 Invite *her* on your Discord server.
 (https://discordapp.com/oauth2/authorize?client_id=XXXX&scope=bot)
 
-## Deploy
+## deploy
 
 Code on `develop` branch.
 
