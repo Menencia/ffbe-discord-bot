@@ -1,7 +1,7 @@
 # ffbe discord bot
 
 Every midnight, this bot makes a TOP 10 of users who have talked the most during 
-the day. It also shows thir last positions on the top.
+the day. It also shows their last positions on the top.
 
 ## installation
 
