@@ -24,4 +24,4 @@ Invite *her* on your Discord server.
 
 Code on `develop` branch.
 
-Merge into master and push, it will deploy automatically to heroku.
+Merge into `master` and push, it will deploy automatically to heroku.
