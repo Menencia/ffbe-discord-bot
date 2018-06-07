@@ -144,10 +144,12 @@ function ffbeTopUpdate() {
             var guild = bot.guilds.get(GUILD_FFBE);
             if (guild && guild.available) {
                 _.forEach(oldUsers, function(userId) {
-                    guild.members.get(userId).removeRole(ROLE_GUARDIANS);
+                    var user = guild.members.get(userId);
+                    if (user) user.removeRole(ROLE_GUARDIANS);
                 });
                 _.forEach(newUsers, function(userId) {
-                    guild.members.get(userId).addRole(ROLE_GUARDIANS);
+                    var user = guild.members.get(userId)
+                    if (user) user.addRole(ROLE_GUARDIANS);
                 });
             }
             lock = false;
