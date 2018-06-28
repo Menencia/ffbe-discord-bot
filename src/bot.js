@@ -253,6 +253,10 @@ bot.on('guildMemberAdd', (guildUser) => {
 });
 
 bot.on('message', (message) => {
+  // accept only on bot's server
+  if (message.channel.guild.id !== guildId) {
+    return;
+  }
   // detect if it's a command (not count in top)
   if (message.content === '!top today' && isGrandsheltKing(message)) {
     ffbeTopToday((html) => {
