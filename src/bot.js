@@ -242,21 +242,18 @@ bot.on('ready', () => {
   job.start();
 });
 
-bot.on('guildMemberAdd', (guildUser) => {
-  const channel = guildUser.guild.channels.get(homeChannelId);
-  if (channel) {
-    const rawMsg = _.sample(messages);
-    const name = `**${guildUser.displayName}**`;
-    const msg = rawMsg.replace(new RegExp('%user', 'g'), name);
-    channel.send(msg);
+bot.on('guildMemberAdd', (member) => {
+  const channel = member.guild.channels.get(homeChannelId);
+  if (!channel) {
+    return;
   }
+
+  const rawMsg = _.sample(messages);
+  const msg = rawMsg.replace(new RegExp('%user', 'g'), member);
+  channel.send(msg);
 });
 
 bot.on('message', (message) => {
-  // accept only on bot's server
-  if (message.channel.guild.id !== guildId) {
-    return;
-  }
   // detect if it's a command (not count in top)
   if (message.content === '!top today' && isGrandsheltKing(message)) {
     ffbeTopToday((html) => {
@@ -267,9 +264,7 @@ bot.on('message', (message) => {
       message.channel.send(html);
     });
   } else if (message.content === '!test' && isGrandsheltKing(message)) {
-    redis.get('top-last', (err, data) => {
-      console.log(data);
-    });
+    console.log(bot.guilds);
   } else if (!message.author.bot) {
     // update top current
     redis.get('top-current', (err, data) => {
