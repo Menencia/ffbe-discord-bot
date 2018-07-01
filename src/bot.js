@@ -4,9 +4,10 @@ const Redis = require('ioredis');
 const { CronJob } = require('cron');
 const moment = require('moment');
 const AsciiTable = require('ascii-table');
+const messages = require('./messages');
+const helper = require('./helper');
 
 const {
-  adminRoleId,
   botChannelId,
   botLoginToken,
   guildId,
@@ -15,32 +16,15 @@ const {
   top10RoleId
 } = require('../settings');
 
-const messages = require('./messages');
-
-/*
-
-_/|_/|/_ _    _/. __  _  _ _/  /_ _ _/_
-/  / /_//_' /_//_\/_ /_///_/  /_//_//
-
-*/
-
-/** CONFIGURATION -------------------------- */
-// edit these next variables
-
-const MSG_DELAY = 60; // in seconds
-const DATE_LOCALE = 'fr';
-const RANKING_UPDATED = 'Le classement a été mis à jour !';
-const NO_RANKINGS_YET = "Aucun classement disponible pour l'instant. Attendez minuit !";
+// labels
+const LABEL_RANKING_UPDATED = 'Le classement a été mis à jour !';
+const LABEL_NO_RANKINGS_YET = "Aucun classement disponible pour l'instant. Attendez minuit !";
 const LABEL_POS = '#';
 const LABEL_PSEUDO = 'Pseudo';
 const LABEL_PTS = 'Pts';
 const LABEL_LAST_MSG = 'D. msg';
 
-/** ***************************************** */
-// please do not edit below,
-// unless you know what you're doing
-
-moment.locale(DATE_LOCALE);
+moment.locale('fr');
 
 const redis = new Redis(redisUrl);
 const bot = new Discord.Client();
@@ -125,7 +109,7 @@ function ffbeTopYesterday(callback) {
 
       html = `\`\`\`js\n${table}\n\`\`\``;
     } else {
-      html = NO_RANKINGS_YET;
+      html = LABEL_NO_RANKINGS_YET;
     }
     return callback(html);
   });
@@ -146,7 +130,7 @@ function ffbeTopUpdate() {
     buildTopLast(data, (oldUsers, newUsers) => {
       console.log('top last built!');
       const channel = bot.channels.get(botChannelId);
-      channel.send(RANKING_UPDATED);
+      channel.send(LABEL_RANKING_UPDATED);
       ffbeTopYesterday((html) => {
         channel.send(html);
       });
@@ -163,10 +147,6 @@ function ffbeTopUpdate() {
       console.log('Top updated!');
     });
   });
-}
-
-function isGrandsheltKing(message) {
-  return message.member.roles.has(adminRoleId);
 }
 
 function ffbeTopToday(callback) {
@@ -202,7 +182,7 @@ function updateTopCurrent(current, author) {
   const user = _.find(current, ['id', author.id]);
   if (user) {
     // spam checker
-    if (_.now() - user.date < MSG_DELAY * 1000) {
+    if (_.now() - user.date < 60 * 1000) {
       return;
     }
     // update user
@@ -250,15 +230,15 @@ bot.on('message', (message) => {
   }
 
   // detect if it's a command (not count in top)
-  if (message.content === '/top today' && isGrandsheltKing(message)) {
+  if (message.content === '/top today' && helper.isGrandsheltKing(message)) {
     ffbeTopToday((html) => {
       message.channel.send(html);
     });
-  } else if (message.content === '/top' && isGrandsheltKing(message)) {
+  } else if (message.content === '/top' && helper.isGrandsheltKing(message)) {
     ffbeTopYesterday((html) => {
       message.channel.send(html);
     });
-  } else if (message.content === '/test' && isGrandsheltKing(message)) {
+  } else if (message.content === '/test' && helper.isGrandsheltKing(message)) {
     console.log(bot.guilds);
   } else {
     // update top current
