@@ -1,18 +1,17 @@
 const Discord = require('discord.js');
 const _ = require('lodash');
-const Redis = require('ioredis');
 const { CronJob } = require('cron');
 const moment = require('moment');
 const AsciiTable = require('ascii-table');
 const messages = require('./messages');
 const helper = require('./helper');
+const db = require('./database');
 
 const {
   botChannelId,
   botLoginToken,
   guildId,
   homeChannelId,
-  redisUrl,
   top10RoleId
 } = require('../settings');
 
@@ -26,12 +25,11 @@ const LABEL_LAST_MSG = 'D. msg';
 
 moment.locale('fr');
 
-const redis = new Redis(redisUrl);
 const bot = new Discord.Client();
 let lock = false;
 
 function resetTopCurrent() {
-  redis.set('top-current', JSON.stringify([]));
+  db.setTopCurrent([]);
 }
 
 function addPosToLast(tmp, last) {
@@ -53,7 +51,7 @@ function addPosToLast(tmp, last) {
 function buildTopLast(data, callback) {
   let oldUsers = [];
   let newUsers = [];
-  redis.get('top-last', (err, last) => {
+  db.getTopLast().then((last) => {
     const tmp = [];
     _.forEach(data, (user) => {
       tmp.push({
@@ -65,7 +63,6 @@ function buildTopLast(data, callback) {
     });
     const tmpIds = _.map(tmp, 'id');
     if (last) {
-      last = JSON.parse(last);
       addPosToLast(tmp, last);
       const lastIds = _.map(last, 'id');
       oldUsers = _.difference(lastIds, tmpIds); // top-last={ancien top-last} et tmp=[]
@@ -73,7 +70,7 @@ function buildTopLast(data, callback) {
     } else {
       newUsers = tmpIds;
     }
-    redis.set('top-last', JSON.stringify(tmp));
+    db.setTopLast(tmp);
     callback(oldUsers, newUsers);
   });
 }
@@ -88,10 +85,9 @@ function getDisplayName(user) {
 }
 
 function ffbeTopYesterday(callback) {
-  redis.get('top-last', (err, data) => {
+  db.getTopLast().then((data) => {
     let html;
     if (data) {
-      data = JSON.parse(data);
       // prettify
       const date = moment().subtract(1, 'day').add(1, 'hour').format('LL');
       const table = new AsciiTable();
@@ -121,10 +117,9 @@ function ffbeTopUpdate() {
     return;
   }
   lock = true;
-  redis.get('top-current', (err, data) => {
-    console.log('top current retrived!');
+  db.getTopCurrent().then((data) => {
+    console.log('top current retrieved!');
     resetTopCurrent();
-    data = JSON.parse(data);
     // pick 10 first
     data = _.take(data, 10);
     buildTopLast(data, (oldUsers, newUsers) => {
@@ -150,8 +145,7 @@ function ffbeTopUpdate() {
 }
 
 function ffbeTopToday(callback) {
-  redis.get('top-current', (err, data) => {
-    data = JSON.parse(data);
+  db.getTopCurrent().then((data) => {
     // pick 10 first
     data = _.take(data, 10);
     // prettify
@@ -175,9 +169,6 @@ function ffbeTopToday(callback) {
 }
 
 function updateTopCurrent(current, author) {
-  // init current
-  current = JSON.parse(current);
-
   // look for user
   const user = _.find(current, ['id', author.id]);
   if (user) {
@@ -201,11 +192,11 @@ function updateTopCurrent(current, author) {
     });
   }
   // save
-  redis.set('top-current', JSON.stringify(current));
+  db.setTopCurrent(current);
 }
 
 bot.on('ready', () => {
-  redis.get('top-current', (err, data) => {
+  db.getTopCurrent().then((data) => {
     if (!data) {
       resetTopCurrent();
     }
@@ -242,7 +233,7 @@ bot.on('message', (message) => {
     console.log(bot.guilds);
   } else {
     // update top current
-    redis.get('top-current', (err, data) => {
+    db.getTopCurrent().then((data) => {
       updateTopCurrent(data, message.author);
     });
   }
