@@ -29,8 +29,6 @@ _/|_/|/_ _    _/. __  _  _ _/  /_ _ _/_
 
 const MSG_DELAY = 60; // in seconds
 const DATE_LOCALE = 'fr';
-const CRON_FREQUENCE = '0 0 * * *';
-const CRON_TIMEZONE = 'Europe/Paris';
 const RANKING_UPDATED = 'Le classement a été mis à jour !';
 const NO_RANKINGS_YET = "Aucun classement disponible pour l'instant. Attendez minuit !";
 const LABEL_POS = '#';
@@ -232,14 +230,6 @@ bot.on('ready', () => {
       resetTopCurrent();
     }
   });
-  const job = new CronJob(
-    CRON_FREQUENCE,
-    _.throttle(ffbeTopUpdate, 2000, { leading: true, trailing: false }),
-    null,
-    false,
-    CRON_TIMEZONE
-  );
-  job.start();
 });
 
 bot.on('guildMemberAdd', (member) => {
@@ -254,18 +244,23 @@ bot.on('guildMemberAdd', (member) => {
 });
 
 bot.on('message', (message) => {
+  // ignore all bot messages
+  if (message.author.bot) {
+    return;
+  }
+
   // detect if it's a command (not count in top)
-  if (message.content === '!top today' && isGrandsheltKing(message)) {
+  if (message.content === '/top today' && isGrandsheltKing(message)) {
     ffbeTopToday((html) => {
       message.channel.send(html);
     });
-  } else if (message.content === '!top' && isGrandsheltKing(message)) {
+  } else if (message.content === '/top' && isGrandsheltKing(message)) {
     ffbeTopYesterday((html) => {
       message.channel.send(html);
     });
-  } else if (message.content === '!test' && isGrandsheltKing(message)) {
+  } else if (message.content === '/test' && isGrandsheltKing(message)) {
     console.log(bot.guilds);
-  } else if (!message.author.bot) {
+  } else {
     // update top current
     redis.get('top-current', (err, data) => {
       updateTopCurrent(data, message.author);
@@ -274,3 +269,13 @@ bot.on('message', (message) => {
 });
 
 bot.login(botLoginToken);
+
+// cron to update leaderboards every midnight
+const job = new CronJob(
+  '0 0 * * *',
+  _.throttle(ffbeTopUpdate, 2000, { leading: true, trailing: false }),
+  null,
+  false,
+  'Europe/Paris'
+);
+job.start();
