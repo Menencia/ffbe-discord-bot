@@ -38,11 +38,11 @@ bot.on('message', (message) => {
 
   // detect if it's a command (not count in top)
   if (message.content === '/top today' && helper.isGrandsheltKing(message)) {
-    helper.displayTopToday(bot, db, (html) => {
+    helper.displayTopToday(rankings.current, bot, (html) => {
       message.channel.send(html);
     });
   } else if (message.content === '/top' && helper.isGrandsheltKing(message)) {
-    helper.displayTopYesterday(bot, db, (html) => {
+    helper.displayTopYesterday(rankings.last, bot, (html) => {
       message.channel.send(html);
     });
   } else if (message.content === '/update' && helper.isGrandsheltKing(message)) {
@@ -51,9 +51,7 @@ bot.on('message', (message) => {
     db.reset();
   } else {
     // update top current
-    db.getTopCurrent().then((data) => {
-      rankings.updateTopCurrent(data, message.author);
-    });
+    rankings.updateTopCurrent(message.author);
   }
 });
 

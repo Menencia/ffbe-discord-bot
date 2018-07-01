@@ -10,26 +10,47 @@ class Rankings {
     this.helper = helper;
     this.db = db;
     this.lock = false;
+    this.resolves = [];
     this.init();
   }
 
   async init() {
-    const data = await this.db.getTopCurrent();
+    let data;
+    // load "current" list
+    data = await this.db.getTopCurrent();
     if (!data) {
       this.db.setTopCurrent([]);
-      this.list = [];
+      this.current = [];
     } else {
-      this.list = data;
+      this.current = data;
+    }
+    // load "last" list
+    data = await this.db.getTopLast();
+    if (!data) {
+      this.db.setTopLast([]);
+      this.last = [];
+    } else {
+      this.last = data;
     }
   }
 
-  updateTopCurrent(current, author) {
-    // @todo handle this on constructor
-    if (!current) {
-      current = [];
-    }
+  // wait for lock=true
+  ready() {
+    return new Promise((resolve) => {
+      if (!this.lock) {
+        resolve();
+      } else {
+        this.resolves.push(resolve);
+      }
+    });
+  }
+
+  async updateTopCurrent(author) {
+    // wait for lock=true
+    await this.ready();
+
     // look for user
-    const user = _.find(current, ['id', author.id]);
+    const user = _.find(this.current, ['id', author.id]);
     if (user) {
       // spam checker
       if (_.now() - user.date < 60 * 1000) {
@@ -39,19 +60,19 @@ class Rankings {
       user.pts += 1;
       user.date = _.now();
       // reorder
-      current = _.orderBy(current, ['pts', 'date'], ['desc', 'asc']);
+      this.current = _.orderBy(this.current, ['pts', 'date'], ['desc', 'asc']);
     } else {
       // add the user at the end
       // no need to reorder
-      current.push({
+      this.current.push({
         id: author.id,
         name: author.username,
         pts: 1,
         date: _.now()
       });
     }
-    // save
-    this.db.setTopCurrent(current);
+    // save "current" list
+    this.db.setTopCurrent(this.current);
   }
 
   update(bot) {
@@ -59,59 +80,71 @@ class Rankings {
       console.log('Warning: blocked illegal update!');
       return;
     }
+
+    // lock rankings means all others action are delayed
     this.lock = true;
-    this.db.getTopCurrent().then((data) => {
-      console.log('top current retrieved!');
-      this.db.setTopCurrent([]);
-      // pick 10 first
-      data = _.take(data, 10);
-      this.buildTopLast(data, (oldUsers, newUsers) => {
-        console.log('top last built!');
-        const channel = bot.channels.get(botChannelId);
-        channel.send(LABEL_RANKING_UPDATED);
-        this.helper.displayTopYesterday(bot, this.db, (html) => {
-          channel.send(html);
-        });
-        const guild = bot.guilds.get(guildId);
-        if (guild && guild.available) {
-          _.forEach(oldUsers, (userId) => {
-            guild.members.get(userId).removeRole(top10RoleId);
-          });
-          _.forEach(newUsers, (userId) => {
-            guild.members.get(userId).addRole(top10RoleId);
-          });
-        }
-        this.lock = false;
-        console.log('Top updated!');
-      });
+
+    // update "last" list
+    const { oldUsers, newUsers } = this.buildTopLast();
+
+    // display "last" list on bot channel
+    const channel = bot.channels.get(botChannelId);
+    channel.send(LABEL_RANKING_UPDATED);
+    this.helper.displayTopYesterday(this.last, bot, (html) => {
+      channel.send(html);
     });
+
+    // update top10 role
+    const guild = bot.guilds.get(guildId);
+    if (guild && guild.available) {
+      _.forEach(oldUsers, (userId) => {
+        guild.members.get(userId).removeRole(top10RoleId);
+      });
+      _.forEach(newUsers, (userId) => {
+        guild.members.get(userId).addRole(top10RoleId);
+      });
+    }
+
+    // update&save empty "current" list
+    this.current = [];
+    this.db.setTopCurrent([]);
+
+    // remove lock
+    this.lock = false;
+
+    // resolve promises if any
+    this.resolves.forEach(resolve => resolve());
   }
 
-  buildTopLast(data, callback) {
+  buildTopLast() {
     let oldUsers = [];
     let newUsers = [];
-    this.db.getTopLast().then((last) => {
-      const tmp = [];
-      _.forEach(data, (user) => {
-        tmp.push({
-          id: user.id,
-          name: user.name,
-          pts: user.pts,
-          pos: 'N'
-        });
+    const current = _.take(this.current, 10);
+    const { last } = this;
+    const tmp = [];
+    _.forEach(current, (user) => {
+      tmp.push({
+        id: user.id,
+        name: user.name,
+        pts: user.pts,
+        pos: 'N'
       });
-      const tmpIds = _.map(tmp, 'id');
-      if (last) {
-        Rankings.addPosToLast(tmp, last);
-        const lastIds = _.map(last, 'id');
-        oldUsers = _.difference(lastIds, tmpIds); // top-last={ancien top-last} et tmp=[]
-        newUsers = _.difference(tmpIds, lastIds);
-      } else {
-        newUsers = tmpIds;
-      }
-      this.db.setTopLast(tmp);
-      callback(oldUsers, newUsers);
     });
+    const tmpIds = _.map(tmp, 'id');
+    if (last) {
+      Rankings.addPosToLast(tmp, last);
+      const lastIds = _.map(last, 'id');
+      oldUsers = _.difference(lastIds, tmpIds); // top-last={ancien top-last} et tmp=[]
+      newUsers = _.difference(tmpIds, lastIds);
+    } else {
+      newUsers = tmpIds;
+    }
+
+    // update&save "last" list
+    this.last = tmp;
+    this.db.setTopLast(tmp);
+
+    return { oldUsers, newUsers };
   }
 
   static addPosToLast(tmp, last) {

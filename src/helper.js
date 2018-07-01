@@ -27,60 +27,56 @@ class Helper {
     return user.name;
   }
 
-  static displayTopYesterday(bot, db, callback) {
-    db.getTopLast().then((data) => {
-      let html;
-      if (data && data.length > 0) {
-        // prettify
-        const date = moment().subtract(1, 'day').format('LL');
-        const table = new AsciiTable();
-        table
-          .setBorder(' ', '-', ' ', ' ')
-          .setTitle(`📋 TOP (${date})`)
-          .setHeading(LABEL_POS, '', LABEL_PSEUDO, LABEL_PTS)
-          .setHeadingAlign(AsciiTable.RIGHT, 0)
-          .setHeadingAlign(AsciiTable.LEFT, 2);
-        _.forEach(data, (user, idx) => {
-          const displayName = Helper.getDisplayName(bot, user);
-          table.addRow(idx + 1, user.pos, displayName, user.pts);
-        });
-        table.setAlign(1, AsciiTable.RIGHT);
+  static displayTopYesterday(last, bot, callback) {
+    let html;
+    if (last && last.length > 0) {
+      // prettify
+      const date = moment().subtract(1, 'day').format('LL');
+      const table = new AsciiTable();
+      table
+        .setBorder(' ', '-', ' ', ' ')
+        .setTitle(`📋 TOP (${date})`)
+        .setHeading(LABEL_POS, '', LABEL_PSEUDO, LABEL_PTS)
+        .setHeadingAlign(AsciiTable.RIGHT, 0)
+        .setHeadingAlign(AsciiTable.LEFT, 2);
+      _.forEach(last, (user, idx) => {
+        const displayName = Helper.getDisplayName(bot, user);
+        table.addRow(idx + 1, user.pos, displayName, user.pts);
+      });
+      table.setAlign(1, AsciiTable.RIGHT);
 
-        html = `\`\`\`js\n${table}\n\`\`\``;
-      } else {
-        html = LABEL_NO_RANKINGS_YET;
-      }
-      return callback(html);
-    });
+      html = `\`\`\`js\n${table}\n\`\`\``;
+    } else {
+      html = LABEL_NO_RANKINGS_YET;
+    }
+    return callback(html);
   }
 
-  static displayTopToday(bot, db, callback) {
-    db.getTopCurrent().then((data) => {
-      let html;
-      if (data && data.length > 0) {
-        // pick 10 first
-        data = _.take(data, 10);
-        // prettify
-        const date = moment().format('LT');
-        const table = new AsciiTable();
-        table
-          .setBorder(' ', '-', ' ', ' ')
-          .setTitle(`📋 TOP @ ${date}`)
-          .setHeading(LABEL_POS, LABEL_PSEUDO, LABEL_PTS, LABEL_LAST_MSG)
-          .setHeadingAlign(AsciiTable.RIGHT, 0)
-          .setHeadingAlign(AsciiTable.LEFT, 1);
-        _.forEach(data, (user, idx) => {
-          const displayName = Helper.getDisplayName(bot, user);
-          const d = moment(user.date).format('LT');
-          table.addRow(idx + 1, displayName, user.pts, d);
-        });
+  static displayTopToday(current, bot, callback) {
+    let html;
+    if (current && current.length > 0) {
+      // pick 10 first
+      const data = _.take(current, 10);
+      // prettify
+      const date = moment().format('LT');
+      const table = new AsciiTable();
+      table
+        .setBorder(' ', '-', ' ', ' ')
+        .setTitle(`📋 TOP @ ${date}`)
+        .setHeading(LABEL_POS, LABEL_PSEUDO, LABEL_PTS, LABEL_LAST_MSG)
+        .setHeadingAlign(AsciiTable.RIGHT, 0)
+        .setHeadingAlign(AsciiTable.LEFT, 1);
+      _.forEach(data, (user, idx) => {
+        const displayName = Helper.getDisplayName(bot, user);
+        const d = moment(user.date).format('LT');
+        table.addRow(idx + 1, displayName, user.pts, d);
+      });
 
-        html = `\`\`\`js\n${table}\n\`\`\``;
-      } else {
-        html = LABEL_NO_RANKINGS_YET;
-      }
-      return callback(html);
-    });
+      html = `\`\`\`js\n${table}\n\`\`\``;
+    } else {
+      html = LABEL_NO_RANKINGS_YET;
+    }
+    return callback(html);
   }
 }
 
