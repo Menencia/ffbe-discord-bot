@@ -3,7 +3,7 @@ const { redisUrl } = require('../settings');
 
 const redis = new Redis(redisUrl);
 
-export default class Database {
+class Database {
   static getTopCurrent() {
     return Database.get('top-current');
   }
@@ -20,6 +20,10 @@ export default class Database {
     Database.set('top-last', data);
   }
 
+  static reset() {
+    redis.del(['top-current', 'top-last']);
+  }
+
   static get(field) {
     return new Promise((resolve, reject) => redis.get(field, (err, data) => {
       if (err) {
@@ -33,3 +37,5 @@ export default class Database {
     redis.set(field, JSON.stringify(data));
   }
 }
+
+module.exports = Database;

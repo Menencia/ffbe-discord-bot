@@ -1,206 +1,22 @@
 const Discord = require('discord.js');
 const _ = require('lodash');
 const { CronJob } = require('cron');
-const moment = require('moment');
-const AsciiTable = require('ascii-table');
 const messages = require('./messages');
 const helper = require('./helper');
 const db = require('./database');
+const Rankings = require('./rankings');
 
 const {
-  botChannelId,
   botLoginToken,
-  guildId,
   homeChannelId,
-  top10RoleId
 } = require('../settings');
 
-// labels
-const LABEL_RANKING_UPDATED = 'Le classement a été mis à jour !';
-const LABEL_NO_RANKINGS_YET = "Aucun classement disponible pour l'instant. Attendez minuit !";
-const LABEL_POS = '#';
-const LABEL_PSEUDO = 'Pseudo';
-const LABEL_PTS = 'Pts';
-const LABEL_LAST_MSG = 'D. msg';
-
-moment.locale('fr');
-
 const bot = new Discord.Client();
-let lock = false;
 
-function resetTopCurrent() {
-  db.setTopCurrent([]);
-}
-
-function addPosToLast(tmp, last) {
-  _.forEach(tmp, (user, idx) => {
-    const found = _.findIndex(last, { id: user.id });
-    if (found > -1) {
-      const diff = found - idx;
-      if (diff === 0) {
-        user.pos = '';
-      } else if (diff > 0) {
-        user.pos = `+${diff}`;
-      } else if (diff < 0) {
-        user.pos = diff;
-      }
-    }
-  });
-}
-
-function buildTopLast(data, callback) {
-  let oldUsers = [];
-  let newUsers = [];
-  db.getTopLast().then((last) => {
-    const tmp = [];
-    _.forEach(data, (user) => {
-      tmp.push({
-        id: user.id,
-        name: user.name,
-        pts: user.pts,
-        pos: 'N'
-      });
-    });
-    const tmpIds = _.map(tmp, 'id');
-    if (last) {
-      addPosToLast(tmp, last);
-      const lastIds = _.map(last, 'id');
-      oldUsers = _.difference(lastIds, tmpIds); // top-last={ancien top-last} et tmp=[]
-      newUsers = _.difference(tmpIds, lastIds);
-    } else {
-      newUsers = tmpIds;
-    }
-    db.setTopLast(tmp);
-    callback(oldUsers, newUsers);
-  });
-}
-
-function getDisplayName(user) {
-  const guild = bot.guilds.get(guildId);
-  if (guild && guild.available) {
-    const u = guild.members.get(user.id);
-    return (u ? u.displayName : user.name);
-  }
-  return user.name;
-}
-
-function ffbeTopYesterday(callback) {
-  db.getTopLast().then((data) => {
-    let html;
-    if (data) {
-      // prettify
-      const date = moment().subtract(1, 'day').add(1, 'hour').format('LL');
-      const table = new AsciiTable();
-      table
-        .setBorder(' ', '-', ' ', ' ')
-        .setTitle(`📋 TOP (${date})`)
-        .setHeading(LABEL_POS, '', LABEL_PSEUDO, LABEL_PTS)
-        .setHeadingAlign(AsciiTable.RIGHT, 0)
-        .setHeadingAlign(AsciiTable.LEFT, 2);
-      _.forEach(data, (user, idx) => {
-        const displayName = getDisplayName(user);
-        table.addRow(idx + 1, user.pos, displayName, user.pts);
-      });
-      table.setAlign(1, AsciiTable.RIGHT);
-
-      html = `\`\`\`js\n${table}\n\`\`\``;
-    } else {
-      html = LABEL_NO_RANKINGS_YET;
-    }
-    return callback(html);
-  });
-}
-
-function ffbeTopUpdate() {
-  if (lock) {
-    console.log('Warning: blocked illegal update!');
-    return;
-  }
-  lock = true;
-  db.getTopCurrent().then((data) => {
-    console.log('top current retrieved!');
-    resetTopCurrent();
-    // pick 10 first
-    data = _.take(data, 10);
-    buildTopLast(data, (oldUsers, newUsers) => {
-      console.log('top last built!');
-      const channel = bot.channels.get(botChannelId);
-      channel.send(LABEL_RANKING_UPDATED);
-      ffbeTopYesterday((html) => {
-        channel.send(html);
-      });
-      const guild = bot.guilds.get(guildId);
-      if (guild && guild.available) {
-        _.forEach(oldUsers, (userId) => {
-          guild.members.get(userId).removeRole(top10RoleId);
-        });
-        _.forEach(newUsers, (userId) => {
-          guild.members.get(userId).addRole(top10RoleId);
-        });
-      }
-      lock = false;
-      console.log('Top updated!');
-    });
-  });
-}
-
-function ffbeTopToday(callback) {
-  db.getTopCurrent().then((data) => {
-    // pick 10 first
-    data = _.take(data, 10);
-    // prettify
-    const date = moment().add(1, 'hour').format('LT');
-    const table = new AsciiTable();
-    table
-      .setBorder(' ', '-', ' ', ' ')
-      .setTitle(`📋 TOP @ ${date}`)
-      .setHeading(LABEL_POS, LABEL_PSEUDO, LABEL_PTS, LABEL_LAST_MSG)
-      .setHeadingAlign(AsciiTable.RIGHT, 0)
-      .setHeadingAlign(AsciiTable.LEFT, 1);
-    _.forEach(data, (user, idx) => {
-      const displayName = getDisplayName(user);
-      const d = moment(user.date).add(1, 'hour').format('LT');
-      table.addRow(idx + 1, displayName, user.pts, d);
-    });
-
-    const html = `\`\`\`js\n${table}\n\`\`\``;
-    return callback(html);
-  });
-}
-
-function updateTopCurrent(current, author) {
-  // look for user
-  const user = _.find(current, ['id', author.id]);
-  if (user) {
-    // spam checker
-    if (_.now() - user.date < 60 * 1000) {
-      return;
-    }
-    // update user
-    user.pts += 1;
-    user.date = _.now();
-    // reorder
-    current = _.orderBy(current, ['pts', 'date'], ['desc', 'asc']);
-  } else {
-    // add the user at the end
-    // no need to reorder
-    current.push({
-      id: author.id,
-      name: author.username,
-      pts: 1,
-      date: _.now()
-    });
-  }
-  // save
-  db.setTopCurrent(current);
-}
+const rankings = new Rankings(db, helper);
 
 bot.on('ready', () => {
-  db.getTopCurrent().then((data) => {
-    if (!data) {
-      resetTopCurrent();
-    }
-  });
+  bot.user.setStatus('idle');
 });
 
 bot.on('guildMemberAdd', (member) => {
@@ -222,19 +38,21 @@ bot.on('message', (message) => {
 
   // detect if it's a command (not count in top)
   if (message.content === '/top today' && helper.isGrandsheltKing(message)) {
-    ffbeTopToday((html) => {
+    helper.displayTopToday(bot, db, (html) => {
       message.channel.send(html);
     });
   } else if (message.content === '/top' && helper.isGrandsheltKing(message)) {
-    ffbeTopYesterday((html) => {
+    helper.displayTopYesterday(bot, db, (html) => {
       message.channel.send(html);
     });
-  } else if (message.content === '/test' && helper.isGrandsheltKing(message)) {
-    console.log(bot.guilds);
+  } else if (message.content === '/update' && helper.isGrandsheltKing(message)) {
+    rankings.update(bot);
+  } else if (message.content === '/reset' && helper.isGrandsheltKing(message)) {
+    db.reset();
   } else {
     // update top current
     db.getTopCurrent().then((data) => {
-      updateTopCurrent(data, message.author);
+      rankings.updateTopCurrent(data, message.author);
     });
   }
 });
@@ -242,11 +60,13 @@ bot.on('message', (message) => {
 bot.login(botLoginToken);
 
 // cron to update leaderboards every midnight
-const job = new CronJob(
-  '0 0 * * *',
-  _.throttle(ffbeTopUpdate, 2000, { leading: true, trailing: false }),
-  null,
-  false,
-  'Europe/Paris'
-);
+const job = new CronJob({
+  cronTime: '0 0 * * *',
+  onTick: () => {
+    rankings.update(bot);
+  },
+  start: false,
+  timeZone: 'Europe/Paris',
+  runOnInit: false
+});
 job.start();
