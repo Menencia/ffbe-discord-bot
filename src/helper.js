@@ -39,7 +39,7 @@ class Helper {
         .setHeading(LABEL_POS, '', LABEL_PSEUDO, LABEL_PTS)
         .setHeadingAlign(AsciiTable.RIGHT, 0)
         .setHeadingAlign(AsciiTable.LEFT, 2);
-      _.forEach(last, (user, idx) => {
+      last.forEach((user, idx) => {
         const displayName = Helper.getDisplayName(bot, user);
         table.addRow(idx + 1, user.pos, displayName, user.pts);
       });
@@ -66,7 +66,7 @@ class Helper {
         .setHeading(LABEL_POS, LABEL_PSEUDO, LABEL_PTS, LABEL_LAST_MSG)
         .setHeadingAlign(AsciiTable.RIGHT, 0)
         .setHeadingAlign(AsciiTable.LEFT, 1);
-      _.forEach(data, (user, idx) => {
+      data.forEach((user, idx) => {
         const displayName = Helper.getDisplayName(bot, user);
         const d = moment(user.date).format('LT');
         table.addRow(idx + 1, displayName, user.pts, d);

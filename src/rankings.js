@@ -50,7 +50,7 @@ class Rankings {
     await this.ready();
 
     // look for user
-    const user = _.find(this.current, ['id', author.id]);
+    const user = this.current.find(e => e.id === author.id);
     if (user) {
       // spam checker
       if (_.now() - user.date < 60 * 1000) {
@@ -97,10 +97,10 @@ class Rankings {
     // update top10 role
     const guild = bot.guilds.get(guildId);
     if (guild && guild.available) {
-      _.forEach(oldUsers, (userId) => {
+      oldUsers.forEach((userId) => {
         guild.members.get(userId).removeRole(top10RoleId);
       });
-      _.forEach(newUsers, (userId) => {
+      newUsers.forEach((userId) => {
         guild.members.get(userId).addRole(top10RoleId);
       });
     }
@@ -122,7 +122,7 @@ class Rankings {
     const current = _.take(this.current, 10);
     const { last } = this;
     const tmp = [];
-    _.forEach(current, (user) => {
+    current.forEach((user) => {
       tmp.push({
         id: user.id,
         name: user.name,
@@ -148,8 +148,8 @@ class Rankings {
   }
 
   static addPosToLast(tmp, last) {
-    _.forEach(tmp, (user, idx) => {
-      const found = _.findIndex(last, { id: user.id });
+    tmp.forEach((user, idx) => {
+      const found = last.findIndex(e => e.id === user.id);
       if (found > -1) {
         const diff = found - idx;
         if (diff === 0) {
