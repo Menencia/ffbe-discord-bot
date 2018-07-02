@@ -54,7 +54,8 @@ bot.on('message', async (message) => {
   } else if (message.content.startsWith('/unit')) {
     const originalName = message.content.split(/ (.+)/)[1];
     const formatedName = originalName.replace(' ', '-').toLowerCase();
-    const res = await fetch(`https://exviusdb.com/gl/units/${formatedName}`);
+    const url = `https://exviusdb.com/gl/units/${formatedName}`;
+    const res = await fetch(url);
     const html = await res.text();
 
     const root = HTMLParser.parse(html);
@@ -66,9 +67,23 @@ bot.on('message', async (message) => {
       // TMR
       const tmr = root.querySelector('.unit-trust-reward-content');
       const tmrName = tmr.childNodes[1].childNodes[0].rawText;
-      const tmrtype = tmr.querySelector('.unit-trust-reward-heading-callout').rawText;
+      const tmrType = tmr.querySelector('.unit-trust-reward-heading-callout').rawText;
       const tmrDesc = tmr.querySelector('.unit-trust-reward-extra').rawText;
-      message.channel.send(`\`\`\`**${unitName}**\n${tmrName}\n(${tmrtype})\n${tmrDesc}\`\`\``);
+      message.channel.send({
+        embed: {
+          color: 3447003,
+          title: unitName,
+          url,
+          fields: [{
+            name: 'TMR',
+            value: `${tmrName} (${tmrType})`
+          },
+          {
+            name: 'Description',
+            value: tmrDesc
+          }]
+        }
+      });
     } catch (e) {
       message.channel.send(`No unit found for \`${originalName}\``);
     }
