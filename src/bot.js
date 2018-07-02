@@ -1,6 +1,8 @@
 const Discord = require('discord.js');
 const _ = require('lodash');
 const { CronJob } = require('cron');
+const HTMLParser = require('fast-html-parser');
+const fetch = require('node-fetch');
 const messages = require('./messages');
 const helper = require('./helper');
 const db = require('./database');
@@ -30,7 +32,7 @@ bot.on('guildMemberAdd', (member) => {
   channel.send(msg);
 });
 
-bot.on('message', (message) => {
+bot.on('message', async (message) => {
   // ignore all bot messages
   if (message.author.bot) {
     return;
@@ -49,6 +51,27 @@ bot.on('message', (message) => {
     rankings.update(bot);
   } else if (message.content === '/reset' && helper.isGrandsheltKing(message)) {
     db.reset();
+  } else if (message.content.startsWith('/unit')) {
+    const originalName = message.content.split(/ (.+)/)[1];
+    const formatedName = originalName.replace(' ', '-').toLowerCase();
+    const res = await fetch(`https://exviusdb.com/gl/units/${formatedName}`);
+    const html = await res.text();
+
+    const root = HTMLParser.parse(html);
+
+    try {
+      // NAME
+      const unitName = root.querySelector('.panel-title').removeWhitespace().rawText;
+
+      // TMR
+      const tmr = root.querySelector('.unit-trust-reward-content');
+      const tmrName = tmr.childNodes[1].childNodes[0].rawText;
+      const tmrtype = tmr.querySelector('.unit-trust-reward-heading-callout').rawText;
+      const tmrDesc = tmr.querySelector('.unit-trust-reward-extra').rawText;
+      message.channel.send(`\`\`\`**${unitName}**\n${tmrName}\n(${tmrtype})\n${tmrDesc}\`\`\``);
+    } catch (e) {
+      message.channel.send(`No unit found for \`${originalName}\``);
+    }
   } else {
     // update top current
     rankings.updateTopCurrent(message.author);
